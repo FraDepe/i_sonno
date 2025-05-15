@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
+import 'package:vector_math/vector_math_64.dart' as vm;
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:http/http.dart' as http;
@@ -29,87 +30,63 @@ class _SensorAppState extends State<SensorApp> {
   late StreamSubscription<GyroscopeEvent> _gyroSub;
   late StreamSubscription<AccelerometerEvent> _accelSub;
 
-  final List<Offset> _path = [Offset(200, 400)];//centers the movement
   //late Timer _sendTimer;
 
   final String serverIP = 'http://localhost:5000/data';
 
   double ax = 0.0, ay = 0.0, az = 0.0, gx = 0.0, gy = 0.0, gz = 0.0;
-  double yaw = 0.0, dt = 0.0;
-  double lastTimestamp = 0.0;
-  double velocityX = 0.0, velocityY = 0.0;
-  double posX = 0.0, posY = 0.0;
-  //valori presi con chatgpt, bisogna capirli bene
-  double scale = 50.0; // Try 50–100 for visibility
-  double startX = 200.0;
-  double startY = 400.0;
+  final dt = 0.02;
+  vm.Vector3 velocity = vm.Vector3.zero();
+  vm.Vector3 position = vm.Vector3.zero();
+  vm.Vector3 orientation = vm.Vector3.zero(); // roll, pitch, yaw
+  final List<Offset> _path = [Offset(200, 400)];
+  vm.Vector3 lastAccel = vm.Vector3.zero();
+  final double scaleFactor = 60.0;
+  vm.Vector3 gravity = vm.Vector3.zero();
+
 
   @override
   void initState() {
     super.initState();
 
     _accelSub = accelerometerEventStream().listen((AccelerometerEvent event){
-      setState(() {
-        ax = event.x;
-        ay = event.y;
-        az = event.z;
-        final x = event.x;
-        final y = event.y;
-
-        // Remove gravity? You could apply a high-pass filter or just ignore Z.
-
-        // Rotate acceleration using yaw
-        final worldX = x * cos(yaw) - y * sin(yaw);
-        final worldY = x * sin(yaw) + y * cos(yaw);
-
-        // Integrate into position (pseudo)
-        velocityX += worldX * dt;
-        velocityY += worldY * dt;
-
-        posX += velocityX * dt;
-        posY += velocityY * dt;
-
-        // Draw this position
-        _path.add(Offset(startX + posX * scale, startY + posY * scale));
-
-        });
-      });
+      ax = event.x;
+      ay = event.y;
+      az = event.z;
+      handleAccelerometer(event);
+    });
 
     _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event){
-      setState(() {
-        gx = event.x;
-        gy = event.y;
-        gz = event.z;
-
-        final now = DateTime.now().millisecondsSinceEpoch.toDouble();
-        dt = (lastTimestamp == 0.0) ? 0.0 : (now - lastTimestamp) / 1000.0;
-        lastTimestamp = now;
-
-        // Integrate gyroscope.z to get yaw (rotation around Z)
-        yaw += event.z * dt;
-      });
+      gx = event.x;
+      gy = event.y;
+      gz = event.z;
+      orientation += vm.Vector3(event.x, event.y, event.z) * dt;
     });
-    //_sendTimer = Timer.periodic(Duration(seconds: 1), (_) => sendData());
   }
-  /**
-  void sendData() async {
-    try {
-      final response = await http.post(
-        Uri.parse(serverIP),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'accelerometer': {'x': ax, 'y': ay, 'z': az},
-          'timestamp': DateTime.now().toIso8601String(),
-        }),
-      );
-      if (response.statusCode != 200) {
-        print('Failed to send data: ${response.statusCode}');
+
+
+  final int bufferSize = 100;
+
+  void handleAccelerometer(AccelerometerEvent event) {
+    final raw = vm.Vector3(event.x, event.y, event.z);
+
+    // Estimate gravity
+    gravity = gravity * 0.8 + raw * 0.2;
+
+    // Subtract gravity
+    final linear = raw - gravity;
+
+    // Take only horizontal motion
+    final Offset point = Offset(linear.x, linear.y) * scaleFactor;
+
+    setState(() {
+      _path.add(point);
+
+      if (_path.length > bufferSize) {
+        _path.removeAt(0);
       }
-    } catch (e) {
-      print('Error sending data: $e');
-    }
+    });
   }
-*/
     @override
     void dispose() {
       _accelSub.cancel();
@@ -126,8 +103,8 @@ class _SensorAppState extends State<SensorApp> {
         body: Stack(
           children: [
             CustomPaint(
-              size: Size.infinite,
-              painter: PathPainter(_path),
+              painter: CirclePathPainter(_path),
+              child: Container(),
             ),
             Padding(
               padding: EdgeInsets.all(16),
@@ -151,26 +128,26 @@ class _SensorAppState extends State<SensorApp> {
   }
 }
 
-class PathPainter extends CustomPainter {
-  final List<Offset> path;
-  PathPainter(this.path);
+class CirclePathPainter extends CustomPainter {
+  final List<Offset> points;
+
+  CirclePathPainter(this.points);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.blueAccent
-      ..strokeWidth = 2
+      ..color = Colors.blue
+      ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
-    if (path.length > 1) {
-      final pathObj = Path()..moveTo(path[0].dx, path[0].dy);
-      for (final point in path.skip(1)) {
-        pathObj.lineTo(point.dx, point.dy);
-      }
-      canvas.drawPath(pathObj, paint);
+    final center = Offset(size.width / 2, size.height / 2);
+    for (int i = 1; i < points.length; i++) {
+      final p1 = center + points[i - 1];
+      final p2 = center + points[i];
+      canvas.drawLine(p1, p2, paint);
     }
   }
 
   @override
-  bool shouldRepaint(PathPainter oldDelegate) => true;
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
