@@ -27,7 +27,7 @@ class _MultiSelectState extends State<MultiSelect> {
   }
 
   void _submit() {
-    Navigator.pop(context, _selectedItems); // Qui si può fare il sort dei giorni
+    Navigator.pop(context, _selectedItems); // fixme Qui si può fare il sort dei giorni
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:i_sonno/global.dart' as globals;
 
 class Alarm {
+  int id;
   TimeOfDay time;
   List<String> days; // Da lunedì a domenica
   bool isActive;
@@ -12,6 +13,7 @@ class Alarm {
   //qualcosa per programmare nel futuro la sveglia (oltre i sette giorni della settimana)
 
     Alarm(
+      this.id,
       this.time,
       this.days, // default oggi o domani in base all'orario OR required
       [
