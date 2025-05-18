@@ -16,7 +16,7 @@ class SensorApp extends StatefulWidget {
 class _SensorAppState extends State<SensorApp> {
 
   Stream<AccelerometerEvent> accelerometerEventStream({
-    Duration samplingPeriod = SensorInterval.normalInterval,
+    Duration samplingPeriod = const Duration(milliseconds:30),
   }) {
     return sensors.accelerometerEventStream(samplingPeriod: samplingPeriod);
   }
@@ -85,8 +85,56 @@ class _SensorAppState extends State<SensorApp> {
       if (_path.length > bufferSize) {
         _path.removeAt(0);
       }
+
+      if (detectCircle(_path)) {
+        print("Circle detected!");
+
+      }
     });
   }
+
+  Offset computeCentroid(List<Offset> points) {
+    if (points.isEmpty) return Offset.zero;
+    final sum = points.reduce((a, b) => a + b);
+    return sum / points.length.toDouble();
+  }
+
+  double standardDeviation(List<double> values) {
+    final mean = values.reduce((a, b) => a + b) / values.length;
+    final squaredDiffs = values.map((v) => pow(v - mean, 2)).toList();
+    return sqrt(squaredDiffs.reduce((a, b) => a + b) / values.length);
+  }
+
+  bool detectCircle(List<Offset> points) {
+    if (points.length < 20) return false;
+
+    final center = computeCentroid(points);
+    final angles = <double>[];
+    final radii = <double>[];
+
+    for (var p in points) {
+      final rel = p - center;
+      angles.add(atan2(rel.dy, rel.dx));
+      radii.add(rel.distance);
+    }
+
+    angles.sort();
+    final angleSpan = angles.last - angles.first;
+    final radiusStdev = standardDeviation(radii);
+    final xStdev = standardDeviation(points.map((p) => p.dx).toList());
+    final yStdev = standardDeviation(points.map((p) => p.dy).toList());
+    print(xStdev.toString()+","+yStdev.toString());
+    final radiusMean = radii.reduce((a, b) => a + b) / radii.length;
+
+    final isClosed = (points.first - points.last).distance < radiusMean * 0.9;
+    //print((points.first - points.last).distance.toString()+","+radiusMean.toString());
+    final hasFullRotation = angleSpan > 5.5; // we don't use it right now
+    final isCircleLike = (xStdev-yStdev).abs() < 20 && xStdev>50 && yStdev>50;
+    print(isClosed.toString()+","+ isCircleLike.toString());
+
+    return isCircleLike;
+  }
+
     @override
     void dispose() {
       _accelSub.cancel();
