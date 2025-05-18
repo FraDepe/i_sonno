@@ -80,6 +80,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
     Navigator.pop(
       context,
       Alarm(0, selectedTime, selectedDays), //Da capire come si comporta il construttore se gli vengono passati parametri null
+                                            // c'è da gestire anche la generazione degli id
     );
   }
 
