@@ -8,11 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 
 
+
 class SensorApp extends StatefulWidget {
   @override
   _SensorAppState createState() => _SensorAppState();
 }
-
 class _SensorAppState extends State<SensorApp> {
 
   Stream<GyroscopeEvent> gyroscopeEventStream({
@@ -26,11 +26,13 @@ class _SensorAppState extends State<SensorApp> {
   final List<Offset> _path = [Offset(200, 400)];
   final double scaleFactor = 60.0;
 
+  static double _progress = 0.0;
 
   @override
   void initState() {
     super.initState();
 
+    _progress=0.0;
     _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event){
 
       final Offset point = Offset(event.x, event.y) * scaleFactor;
@@ -44,6 +46,8 @@ class _SensorAppState extends State<SensorApp> {
 
       if (detectShake(_path)) {
         print("Shake detected!");
+        _progress += 1/200;
+        if(_progress >= 1){_progress=0.0;}
 
       }
      
@@ -54,7 +58,8 @@ class _SensorAppState extends State<SensorApp> {
 
   final int bufferSize = 10;
 
-
+  
+ 
   double standardDeviation(List<double> values) {
     final mean = values.reduce((a, b) => a + b) / values.length;
     final squaredDiffs = values.map((v) => pow(v - mean, 2)).toList();
@@ -65,11 +70,12 @@ class _SensorAppState extends State<SensorApp> {
     //print("CI SONO");
     if (points.length < 10) return false;
 
+  
     final xStdev = standardDeviation(points.map((p) => p.dx).toList());
     final yStdev = standardDeviation(points.map((p) => p.dy).toList());
-    
+   
     final isShaking = xStdev>80 || yStdev>80;
-    //print(isCircleLike.toString());
+
 
     return isShaking;
   }
@@ -77,6 +83,7 @@ class _SensorAppState extends State<SensorApp> {
     @override
     void dispose() {
       _gyroSub.cancel();
+      //_sendTimer.cancel();
       super.dispose();
     }
 
@@ -103,6 +110,22 @@ class _SensorAppState extends State<SensorApp> {
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LinearProgressIndicator(
+                    value: _progress,
+                    minHeight: 20,
+                    backgroundColor: Colors.grey[300],
+                    color: Colors.blue,
+                  ),SizedBox(height: 20),
+                  Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
+                  SizedBox(height: 40),
+                ],
+              ),
+          ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -137,3 +160,4 @@ class CirclePathPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
+
