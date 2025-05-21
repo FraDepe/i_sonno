@@ -94,10 +94,7 @@ class _SensorAppState extends State<SensorApp> {
         appBar: AppBar(title: Text('Sensor Data')),
         body: Stack(
           children: [
-            CustomPaint(
-              painter: CirclePathPainter(_path),
-              child: Container(),
-            ),
+          
             Padding(
               padding: EdgeInsets.all(16),
               child: Column(
