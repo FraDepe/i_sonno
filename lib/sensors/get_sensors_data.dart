@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:i_sonno/screen/alarms_screen.dart';
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 
 class Offset3D {
@@ -163,11 +164,13 @@ class _SensorAppState extends State<SensorApp> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Icon(Icons.backspace),
-        ),
-      ),
-    );
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_)=>const AlarmsScreen(title:"Sveglie")
+          ))
+          ,child: Icon(Icons.backspace),),//fix me popup until
+          
+)        ,
+      );
   }
 }
 

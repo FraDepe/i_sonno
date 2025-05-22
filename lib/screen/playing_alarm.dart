@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:i_sonno/global.dart' as global;
 import 'package:flutter/services.dart';
+import 'package:i_sonno/sensors/get_sensors_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,7 @@ class PlayingAlarmScreen extends StatefulWidget {
 class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   final player = AudioPlayer();
 
+  //Funzione che scrive l'asset suoneria su file
   Future<void> playAssetAsFile(AudioPlayer player, String assetPath) async {
 
   final byteData = await rootBundle.load(assetPath);
@@ -56,7 +58,9 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
     await prefs.setBool('alarmTriggered', false);
 
     if (mounted) {
-      Navigator.of(context).pop();
+      Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) =>  SensorApp(),
+          ));
     } else {
       exit(0);
     }
@@ -75,7 +79,7 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           ),
           child: Text(
-            'Spegni sveglia',
+            'Inizia il task',
             style: TextStyle(fontSize: 24),),
         ),
       )
