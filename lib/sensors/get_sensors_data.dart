@@ -7,7 +7,18 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 
+class Offset3D {
+  final double dx;
+  final double dy;
+  final double dz;
 
+  const Offset3D(this.dx, this.dy, this.dz);
+
+  Offset3D operator *(double scale) => Offset3D(dx * scale, dy * scale, dz * scale);
+
+  @override
+  String toString() => 'Offset3D(x: $dx, y: $dy, z: $dz)';
+}
 
 class SensorApp extends StatefulWidget {
   @override
@@ -23,19 +34,23 @@ class _SensorAppState extends State<SensorApp> {
 
   late StreamSubscription<GyroscopeEvent> _gyroSub;
 
-  final List<Offset> _path = [Offset(200, 400)];
+  final List<Offset3D> _path = [Offset3D(200, 400, 0)];
   final double scaleFactor = 60.0;
-
+  String task_completed = "";
+  int _axis = 0;
+  String _axis_text = "";
   static double _progress = 0.0;
 
   @override
   void initState() {
     super.initState();
 
+    _axis = Random().nextInt(3);
+    _axis_text = (_axis==0)?"x":(_axis==1)?"y":"z";
     _progress=0.0;
     _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event){
 
-      final Offset point = Offset(event.x, event.y) * scaleFactor;
+      final Offset3D point = Offset3D(event.x, event.y, event.z) * scaleFactor;
       setState(() {
         
       _path.add(point);
@@ -47,7 +62,7 @@ class _SensorAppState extends State<SensorApp> {
       if (detectShake(_path)) {
         print("Shake detected!");
         _progress += 1/200;
-        if(_progress >= 1){_progress=0.0;}
+        if(_progress >= 1){_progress = 1; task_completed="Il task è completato!";}
 
       }
      
@@ -66,17 +81,15 @@ class _SensorAppState extends State<SensorApp> {
     return sqrt(squaredDiffs.reduce((a, b) => a + b) / values.length);
   }
 
-  bool detectShake(List<Offset> points) {
-    //print("CI SONO");
+  bool detectShake(List<Offset3D> points) {
     if (points.length < 10) return false;
-
   
     final xStdev = standardDeviation(points.map((p) => p.dx).toList());
     final yStdev = standardDeviation(points.map((p) => p.dy).toList());
-   
-    final isShaking = xStdev>80 || yStdev>80;
+    final zStdev = standardDeviation(points.map((p) => p.dz).toList());
 
-
+    final isShaking = (_axis==0)?xStdev>160:(_axis==1)?yStdev>150:zStdev>150;
+    
     return isShaking;
   }
 
@@ -94,7 +107,6 @@ class _SensorAppState extends State<SensorApp> {
         appBar: AppBar(title: Text('Sensor Data')),
         body: Stack(
           children: [
-          
             Padding(
               padding: EdgeInsets.all(16),
               child: Column(
@@ -103,10 +115,8 @@ class _SensorAppState extends State<SensorApp> {
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text("Indietro"),
-                  )
-                ],
-              ),
-            ),
+                  ),
+                  Center(child: Text("Shakera il telefonosull'asse delle "+_axis_text+" al completamento della barra")),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -120,10 +130,15 @@ class _SensorAppState extends State<SensorApp> {
                   ),SizedBox(height: 20),
                   Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
                   SizedBox(height: 40),
+                  Center(child: Text(task_completed)),
                 ],
               ),
           ),
-          ],
+
+                ],
+              ),
+            ),
+                      ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => setState(() => _path.clear()),
