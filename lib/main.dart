@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:i_sonno/router/homeRouter.dart';
 import 'package:i_sonno/screen/overlay_screen.dart';
 
@@ -22,6 +23,11 @@ class AlarmApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+
     return MaterialApp(
       title: 'iSonno',
       theme: ThemeData(

@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
-import 'package:vector_math/vector_math_64.dart' as vm;
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:http/http.dart' as http;
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 
 class Offset3D {
@@ -24,11 +21,16 @@ class SensorApp extends StatefulWidget {
   @override
   _SensorAppState createState() => _SensorAppState();
 }
+
 class _SensorAppState extends State<SensorApp> {
+
+  final int bufferSize = 10;
 
   Stream<GyroscopeEvent> gyroscopeEventStream({
     Duration samplingPeriod = SensorInterval.normalInterval,
   }) {
+    //fixme Perchè usiamo due import uguali ma uno ha un nome?
+    //E soprattutto perchè se usiamo solamente l'import senza nome l'app va in Stack Overflow?
     return sensors.gyroscopeEventStream(samplingPeriod: samplingPeriod);
   }
 
@@ -48,32 +50,41 @@ class _SensorAppState extends State<SensorApp> {
     _axis = Random().nextInt(3);
     _axis_text = (_axis==0)?"x":(_axis==1)?"y":"z";
     _progress=0.0;
-    _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event){
+    _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event) {
 
       final Offset3D point = Offset3D(event.x, event.y, event.z) * scaleFactor;
+
       setState(() {
         
-      _path.add(point);
+        _path.add(point);
 
-      if (_path.length > bufferSize) {
-        _path.removeAt(0);
-      }
+        if (_path.length > bufferSize) {
+          _path.removeAt(0);
+        }
 
-      if (detectShake(_path)) {
-        print("Shake detected!");
-        _progress += 1/200;
-        if(_progress >= 1){_progress = 1; task_completed="Il task è completato!";}
+        if (_progress < 1 && detectStandingStill(_path)) {
+          if (_progress > 1/300) {
+            _progress -= 1/300;
+            debugPrint("Movite");
+          } else if (_progress > 0 && _progress < 1/300) {
+            _progress = 0;
+          }
+          // todo if arriviamo a zero risuona la sveglia
 
-      }
-     
-    });
+        }
+
+        if (detectShake(_path)) {
+          print("Shake detected!");
+          _progress += 1/200;
+
+          if (_progress >= 1) {
+            _progress = 1;
+            task_completed="Il task è completato!";
+          }
+        }
+      });
     });
   }
-
-
-  final int bufferSize = 10;
-
-  
  
   double standardDeviation(List<double> values) {
     final mean = values.reduce((a, b) => a + b) / values.length;
@@ -83,7 +94,7 @@ class _SensorAppState extends State<SensorApp> {
 
   bool detectShake(List<Offset3D> points) {
     if (points.length < 10) return false;
-  
+
     final xStdev = standardDeviation(points.map((p) => p.dx).toList());
     final yStdev = standardDeviation(points.map((p) => p.dy).toList());
     final zStdev = standardDeviation(points.map((p) => p.dz).toList());
@@ -93,14 +104,27 @@ class _SensorAppState extends State<SensorApp> {
     return isShaking;
   }
 
-    @override
-    void dispose() {
-      _gyroSub.cancel();
-      //_sendTimer.cancel();
-      super.dispose();
-    }
+  bool detectStandingStill(List<Offset3D> points) {
+    if (points.length < 10) return false;
 
-    @override
+    final xStdev = standardDeviation(points.map((p) => p.dx).toList());
+    final yStdev = standardDeviation(points.map((p) => p.dy).toList());
+    final zStdev = standardDeviation(points.map((p) => p.dz).toList());
+
+    final isStandingStill = (_axis==0)?xStdev<160:(_axis==1)?yStdev<150:zStdev<150;
+    //todo capire se vogliamo avere un margine in cui la barra ne aumenta ne diminuisce
+
+    return isStandingStill;
+  }
+
+  @override
+  void dispose() {
+    _gyroSub.cancel();
+    //_sendTimer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -112,43 +136,42 @@ class _SensorAppState extends State<SensorApp> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("Indietro"),
+                  Center(
+                    // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
+                    child: Text("Shakera il telefono sull'asse delle "+_axis_text+" al completamento della barra")
                   ),
-                  Center(child: Text("Shakera il telefonosull'asse delle "+_axis_text+" al completamento della barra")),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  LinearProgressIndicator(
-                    value: _progress,
-                    minHeight: 20,
-                    backgroundColor: Colors.grey[300],
-                    color: Colors.blue,
-                  ),SizedBox(height: 20),
-                  Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
-                  SizedBox(height: 40),
-                  Center(child: Text(task_completed)),
-                ],
-              ),
-          ),
-
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        LinearProgressIndicator(
+                          value: _progress,
+                          minHeight: 20,
+                          backgroundColor: Colors.grey[300],
+                          color: Colors.blue,
+                        ),SizedBox(height: 20),
+                        Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
+                        SizedBox(height: 40),
+                        Center(child: Text(task_completed)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-                      ],
+          ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => setState(() => _path.clear()),
-          child: Icon(Icons.clear),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Icon(Icons.backspace),
         ),
       ),
     );
   }
 }
 
+// fixme Ci serve o era per disegnare il plot dei sensori?
 class CirclePathPainter extends CustomPainter {
   final List<Offset> points;
 
