@@ -53,17 +53,11 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   }
 
   void _stopAlarm() async {
-    await player.stop();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('alarmTriggered', false);
-
-    if (mounted) {
-      Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) =>  SensorApp(),
-          ));
-    } else {
-      exit(0);
-    }
+    //await player.stop();
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) =>  SensorApp(player: player),
+    ));
+    
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:i_sonno/screen/alarms_screen.dart';
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
@@ -19,6 +20,14 @@ class Offset3D {
 }
 
 class SensorApp extends StatefulWidget {
+  final AudioPlayer? player;
+
+  const SensorApp({Key? key, required this.player}) : super(key: key);
+
+  const SensorApp.playerFull(AudioPlayer player, {Key? key}) : this(key: key, player: player);
+
+  const SensorApp.playerLess({Key? key}) : this(key: key, player: null);
+  
   @override
   _SensorAppState createState() => _SensorAppState();
 }
@@ -70,8 +79,6 @@ class _SensorAppState extends State<SensorApp> {
           } else if (_progress > 0 && _progress < 1/300) {
             _progress = 0;
           }
-          // todo if arriviamo a zero risuona la sveglia
-
         }
 
         if (detectShake(_path)) {
@@ -81,6 +88,7 @@ class _SensorAppState extends State<SensorApp> {
           if (_progress >= 1) {
             _progress = 1;
             task_completed="Il task è completato!";
+            widget.player?.stop();
           }
         }
       });
@@ -164,13 +172,13 @@ class _SensorAppState extends State<SensorApp> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_)=>const AlarmsScreen(title:"Sveglie")
-          ))
-          ,child: Icon(Icons.backspace),),//fix me popup until
-          
-)        ,
-      );
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute( //fixme popuntil altrimenti si sovrappongono due stream di sensori e fuckuppa tutto
+            builder: (_)=>const AlarmsScreen(title:"Sveglie")
+            )),
+          child: Icon(Icons.backspace),
+        ),
+      ),
+    );
   }
 }
 

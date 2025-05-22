@@ -51,7 +51,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
             child: ElevatedButton(
               onPressed: () async {
                 final newAlarm = await Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => SensorApp())
+                    context, MaterialPageRoute(builder: (context) => SensorApp.playerLess())
                 );
                 if (newAlarm != null) {
                   _addAlarm(newAlarm);
