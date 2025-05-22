@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:i_sonno/global.dart' as global;
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,6 +16,19 @@ class PlayingAlarmScreen extends StatefulWidget {
 class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   final player = AudioPlayer();
 
+  Future<void> playAssetAsFile(AudioPlayer player, String assetPath) async {
+
+  final byteData = await rootBundle.load(assetPath);
+
+  final tempDir = await getTemporaryDirectory();
+  final file = File('${tempDir.path}/temp_audio.mp3');
+
+  await file.writeAsBytes(byteData.buffer.asUint8List());
+
+  await player.setFilePath(file.path);
+  await player.play();
+}
+
   @override
   void initState() {
     _startAlarm();
@@ -22,9 +37,9 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
 
   void _startAlarm() async {
     try {
-      await player.setAsset(global.defaultRingtone);
-      await player.setClip(start: Duration(seconds: 0), end: Duration(seconds: 15));
-      await player.play();
+      await playAssetAsFile(player, 'assets/Default.mp3');
+      //await player.setClip(start: Duration(seconds: 0), end: Duration(seconds: 15));
+      //await player.play();
     } catch (e) {
       debugPrint(e.toString());
     }
