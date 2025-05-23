@@ -19,9 +19,10 @@ class _HomeRouterState extends State<HomeRouter> {
 
     platform.setMethodCallHandler((call) async {
       if (call.method == "openAlarmPage") {
-            Future.delayed(Duration(milliseconds: 300), () {
-            Navigator.of(context).push(MaterialPageRoute(
+        Future.delayed(Duration(milliseconds: 300), () {
+          Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => const PlayingAlarmScreen(),
+            settings: RouteSettings(name: "/playingAlarm")
           ));
         });
       }

@@ -51,7 +51,10 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
             child: ElevatedButton(
               onPressed: () async {
                 final newAlarm = await Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => SensorApp.playerLess())
+                    context, MaterialPageRoute(
+                      builder: (context) => SensorApp.playerLess(),
+                      settings: RouteSettings(name: "/testSensors")
+                    )
                 );
                 if (newAlarm != null) {
                   _addAlarm(newAlarm);
@@ -93,7 +96,10 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final newAlarm = await Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AddAlarmScreen())
+            context, MaterialPageRoute(
+              builder: (context) => AddAlarmScreen(),
+              settings: RouteSettings(name: "/addAlarm")
+            )
             );
             if (newAlarm != null) {
               _addAlarm(newAlarm);

@@ -172,9 +172,7 @@ class _SensorAppState extends State<SensorApp> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context).push(MaterialPageRoute( //fixme popuntil altrimenti si sovrappongono due stream di sensori e fuckuppa tutto
-            builder: (_)=>const AlarmsScreen(title:"Sveglie")
-            )),
+          onPressed: () => Navigator.popUntil(context, (route) => route.settings.name == "/"),
           child: Icon(Icons.backspace),
         ),
       ),

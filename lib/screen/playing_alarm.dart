@@ -56,6 +56,7 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
     //await player.stop();
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) =>  SensorApp(player: player),
+      settings: RouteSettings(name: "/playingAlarm/firstTask")
     ));
     
   }
