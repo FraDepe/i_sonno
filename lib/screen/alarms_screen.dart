@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:i_sonno/screen/add_alarm_screen.dart';
 import 'package:i_sonno/model/alarm.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import 'package:i_sonno/sensors/get_sensors_data.dart';
+import 'package:i_sonno/sensors/shake_detector.dart';
+import 'package:i_sonno/sensors/pedometer_detector.dart';
 
 class AlarmsScreen extends StatefulWidget {
   const AlarmsScreen({super.key, required this.title});
@@ -61,6 +62,22 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
                 }
               },
               child: Text('Sensors'),
+            ),
+          ),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                final newAlarm = await Navigator.push(
+                    context, MaterialPageRoute(
+                      builder: (context) => PedometerApp(),
+                      settings: RouteSettings(name: "/testPedometer")
+                    )
+                );
+                if (newAlarm != null) {
+                  _addAlarm(newAlarm);
+                }
+              },
+              child: Text('Pedometer'),
             ),
           ),
           Expanded(
