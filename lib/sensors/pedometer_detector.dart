@@ -1,3 +1,5 @@
+import 'dart:async' as dartAsync;
+
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,8 +12,12 @@ class PedometerApp extends StatefulWidget {
 }
 
 class _PedometerAppState extends State<PedometerApp> {
-  late Stream<StepCount> _stepCountStream;
-  int _steps = 0;
+
+  dartAsync.Timer? _timer;
+
+  late Stream<PedestrianStatus> _pedestrianStatusStream;
+  PedestrianStatus? _status;
+
   static double _progress = 0.0;
   String task_completed = "";
 
@@ -29,34 +35,53 @@ class _PedometerAppState extends State<PedometerApp> {
       return;
     }
 
-    _stepCountStream = Pedometer.stepCountStream;
-    _stepCountStream.listen(_onStepCount).onError(_onStepCountError);
+    _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
+    _pedestrianStatusStream.listen(_onStatusChanged, onError: _onError);
   }
 
-  void _onStepCount(StepCount event) {
-    print('Steps: ${event.steps}');
+  void _onStatusChanged(PedestrianStatus status) {
     setState(() {
-      _steps = event.steps;
-      _progress += 1/200;
-      if (_progress >= 1) {
-            _progress = 1;
-            task_completed="Il task è completato!";
-          }
-      
-        if (_progress < 1) {
-          if (_progress > 1/300) {
-            _progress -= 1/300;
-            debugPrint("Movite");
-          } else if (_progress > 0 && _progress < 1/300) {
-            _progress = 0;
-          }
-        }
+      _status = status;      
+    });
+
+    if (status.status == 'walking') {
+      _startProgressTimer();
+    } else {
+      _stopProgressTimer();
+    }
+  }
+
+  void _onError(error) {
+    print('Pedestrian Status error: $error');
+    setState(() {
+      _status = null;
     });
   }
 
-  void _onStepCountError(error) {
-    print('Step Count Error: $error');
+  void _startProgressTimer() {
+    _timer?.cancel(); // ferma un eventuale timer precedente
+    _timer = dartAsync.Timer.periodic(Duration(seconds: 1), (_) {
+      if (_status?.status == 'walking') {
+        setState(() {
+          _progress += 1/200;
+          if (_progress > 1) {
+            _progress = 1;
+          }
+        });
+      }
+    });
   }
+
+  void _stopProgressTimer() {
+    _timer?.cancel();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
  
  @override
   Widget build(BuildContext context) {

@@ -13,7 +13,7 @@ class AddAlarmScreen extends StatefulWidget {
 class _AddAlarmScreenState extends State<AddAlarmScreen> {
   TimeOfDay selectedTime = TimeOfDay(hour: 6, minute: 0);
   List<String> selectedDays = []; //Oggi o domani, in base all'orario scelto
-  String ringtone = 'Default';
+  String ringtone = '';
   bool vibration = true;
 
   Future<void> _pickTime() async {
@@ -62,7 +62,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
   Future<void> _selectRingtone() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['mp3']
+      allowedExtensions: ['mp3', 'wav']
     );
 
     if (result != null) {
@@ -79,8 +79,8 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
   void _submit() {
     Navigator.pop(
       context,
-      Alarm(0, selectedTime, selectedDays), //Da capire come si comporta il construttore se gli vengono passati parametri null
-                                            // c'è da gestire anche la generazione degli id
+      Alarm(0, selectedTime, selectedDays, ringtone), //Da capire come si comporta il construttore se gli vengono passati parametri null
+                                                      // c'è da gestire anche la generazione degli id
     );
   }
 

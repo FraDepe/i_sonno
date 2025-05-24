@@ -16,11 +16,11 @@ class Alarm {
       this.id,
       this.time,
       this.days, // default oggi o domani in base all'orario OR required
+      this.ringtonePath,
       [
         this.isActive = true,
         this.label = "Sveglia",
         this.vibration = false,
-        this.ringtonePath = globals.defaultRingtone
       ]
     );
     /*
