@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+
+
 class PedometerApp extends StatefulWidget {
   const PedometerApp({super.key});
 
@@ -63,7 +65,7 @@ class _PedometerAppState extends State<PedometerApp> {
     _timer = dartAsync.Timer.periodic(Duration(seconds: 1), (_) {
       if (_status?.status == 'walking') {
         setState(() {
-          _progress += 1/200;
+          _progress += 1/100;
           if (_progress > 1) {
             _progress = 1;
           }
