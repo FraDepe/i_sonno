@@ -32,7 +32,7 @@ class AlarmApp extends StatelessWidget {
     return MaterialApp(
       title: 'iSonno',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 110, 63, 63)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 136, 22, 154)),
       ),
       home: const HomeRouter(), // Router per gestire la schermata da aprire
     );
