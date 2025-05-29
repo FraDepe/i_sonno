@@ -31,6 +31,28 @@ class _HomeRouterState extends State<HomeRouter> {
 
   @override
   Widget build(BuildContext context) {
-    return const AlarmsScreen(title: 'Sveglie');
-  }
+  return WillPopScope(
+    onWillPop: () async {
+      final shouldExit = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Uscire dall\'app?'),
+          content: const Text('Vuoi davvero chiudere l\'app?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Annulla'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Esci'),
+            ),
+          ],
+        ),
+      );
+      return shouldExit ?? false;
+    },
+    child: const AlarmsScreen(title: "Sveglie!")
+  );
+}
 }
