@@ -32,7 +32,54 @@ class AlarmApp extends StatelessWidget {
     return MaterialApp(
       title: 'iSonno',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 136, 22, 154)),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black,
+        primaryColor: Colors.deepPurple,
+        colorScheme: ColorScheme.dark(
+          primary: Colors.deepPurple,
+          secondary: Colors.purpleAccent,
+          surface: Colors.black,
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: Colors.white70,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+          ),
+        ),
+        cardColor: const Color(0xFF1E1E1E),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white70),
+        ),
+        switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            print("on");
+            return Colors.green; // thumb when ON
+          }
+          return Colors.black; // thumb when OFF
+        }),
+        trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.deepPurple; // track when ON
+          }
+          return Colors.deepPurple; // track when OFF
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.green; // outline when ON
+          }
+          return Colors.black; // outline when OFF
+        }),
+      ),
       ),
       home: const HomeRouter(), // Router per gestire la schermata da aprire
     );
