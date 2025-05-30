@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:i_sonno/screen/alarms_screen.dart';
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 
 class Offset3D {

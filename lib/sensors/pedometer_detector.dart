@@ -1,5 +1,7 @@
-import 'dart:async' as dartAsync;
-
+import 'dart:async';
+import 'dart:collection';
+import 'dart:math';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,12 +15,19 @@ class PedometerApp extends StatefulWidget {
   _PedometerAppState createState() => _PedometerAppState();
 }
 
+//FIXME spostare il calcolo della camminata in un widget, non nell'intera schermata. Migliora le performance
+//inoltre si potrebbe chiamare il controllo isReallyWalking meno volte
 class _PedometerAppState extends State<PedometerApp> {
 
-  dartAsync.Timer? _timer;
+  Timer? _timer;
 
   late Stream<PedestrianStatus> _pedestrianStatusStream;
   PedestrianStatus? _status;
+
+  Queue<double> accBuffer = Queue();
+  final int bufferSize = 20;
+  bool isReallyWalking = false;
+  StreamSubscription? _accSub;
 
   static double _progress = 0.0;
   String task_completed = "";
@@ -27,7 +36,9 @@ class _PedometerAppState extends State<PedometerApp> {
   @override
   void initState() {
     super.initState();
+    _progress = 0;
     _initPedometer();
+    _initAccelerometer();
   }
 
   Future<void> _initPedometer() async {
@@ -46,7 +57,7 @@ class _PedometerAppState extends State<PedometerApp> {
       _status = status;      
     });
 
-    if (status.status == 'walking') {
+    if (status.status == 'walking' && isReallyWalking) {
       _startProgressTimer();
     } else {
       _stopProgressTimer();
@@ -60,9 +71,35 @@ class _PedometerAppState extends State<PedometerApp> {
     });
   }
 
+  void _initAccelerometer() {
+    _accSub = accelerometerEventStream().listen((event) {
+      double acc = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
+      accBuffer.add(acc);
+      if (accBuffer.length > bufferSize) {
+        accBuffer.removeFirst();
+      }
+
+      isReallyWalking = isMovementRegular();
+    });
+  }
+
+  bool isMovementRegular() {
+  if (accBuffer.length < bufferSize) return false;
+
+  final mean = accBuffer.reduce((a, b) => a + b) / accBuffer.length;
+  final variance = accBuffer
+      .map((a) => pow(a - mean, 2))
+      .reduce((a, b) => a + b) / accBuffer.length;
+  final stDev = sqrt(variance);
+
+  debugPrint(stDev.toString());
+  // Gioca con questo valore in base a test reali
+  return stDev > 0.8 && stDev < 1.8;
+}
+
   void _startProgressTimer() {
     _timer?.cancel(); // ferma un eventuale timer precedente
-    _timer = dartAsync.Timer.periodic(Duration(seconds: 1), (_) {
+    _timer = Timer.periodic(Duration(seconds: 1), (_) {
       if (_status?.status == 'walking') {
         setState(() {
           _progress += 1/100;
@@ -81,6 +118,7 @@ class _PedometerAppState extends State<PedometerApp> {
   @override
   void dispose() {
     _timer?.cancel();
+    _accSub?.cancel();
     super.dispose();
   }
 

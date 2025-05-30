@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:i_sonno/global.dart' as globals;
 
 class Alarm {
   int id;
