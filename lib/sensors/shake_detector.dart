@@ -144,6 +144,7 @@ class _SensorAppState extends State<SensorApp> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 60),
                   Center(
                     // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
                     child: Text("Shakera il telefono sull'asse delle "+_axis_text+" al completamento della barra")
@@ -158,9 +159,10 @@ class _SensorAppState extends State<SensorApp> {
                           minHeight: 20,
                           backgroundColor: Colors.grey[300],
                           color: Colors.blue,
-                        ),SizedBox(height: 20),
+                        ),
+                        SizedBox(height: 20),
                         Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
-                        SizedBox(height: 40),
+                        SizedBox(height: 60),
                         Center(child: Text(task_completed)),
                       ],
                     ),
@@ -179,7 +181,7 @@ class _SensorAppState extends State<SensorApp> {
   }
 }
 
-// fixme Ci serve o era per disegnare il plot dei sensori?
+//FIXME Ci serve o era per disegnare il plot dei sensori?
 class CirclePathPainter extends CustomPainter {
   final List<Offset> points;
 

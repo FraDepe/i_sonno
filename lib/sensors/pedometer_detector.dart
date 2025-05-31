@@ -29,6 +29,8 @@ class _PedometerAppState extends State<PedometerApp> {
   bool isReallyWalking = false;
   StreamSubscription? _accSub;
 
+  bool isWalking = false;
+
   static double _progress = 0.0;
   String task_completed = "";
 
@@ -102,6 +104,7 @@ class _PedometerAppState extends State<PedometerApp> {
     _timer = Timer.periodic(Duration(seconds: 1), (_) {
       if (_status?.status == 'walking') {
         setState(() {
+          isWalking = true;
           _progress += 1/100;
           if (_progress > 1) {
             _progress = 1;
@@ -112,6 +115,9 @@ class _PedometerAppState extends State<PedometerApp> {
   }
 
   void _stopProgressTimer() {
+    setState(() {
+      isWalking = false;
+    });
     _timer?.cancel();
   }
 
@@ -135,6 +141,7 @@ class _PedometerAppState extends State<PedometerApp> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 60),
                   Center(
                     // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
                     child: Text("Cammina fino a completamento della barra")
@@ -151,8 +158,13 @@ class _PedometerAppState extends State<PedometerApp> {
                           color: Colors.blue,
                         ),SizedBox(height: 20),
                         Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
-                        SizedBox(height: 40),
+                        SizedBox(height: 60),
                         Center(child: Text(task_completed)),
+                        Icon(
+                          isWalking ? Icons.directions_walk_rounded
+                                    : Icons.accessibility_new_rounded,
+                          size: 240,
+                        )
                       ],
                     ),
                   ),
