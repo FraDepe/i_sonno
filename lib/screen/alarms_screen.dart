@@ -5,6 +5,7 @@ import 'package:i_sonno/model/alarm.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:i_sonno/sensors/shake_detector.dart';
 import 'package:i_sonno/sensors/pedometer_detector.dart';
+import 'package:i_sonno/service/local_notifications.dart';
 
 class AlarmsScreen extends StatefulWidget {
   const AlarmsScreen({super.key, required this.title});
@@ -78,6 +79,14 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
                 }
               },
               child: Text('Pedometer'),
+            ),
+          ),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                LocalNotifications.sendSimpleNotification();
+              },
+              child: Text('Notificami tutto'),
             ),
           ),
           Expanded(

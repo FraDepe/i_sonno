@@ -44,7 +44,7 @@ class _PedometerAppState extends State<PedometerApp> {
   }
 
   Future<void> _initPedometer() async {
-    final status = await Permission.activityRecognition.request();
+    final status = await Permission.activityRecognition.request(); //FIXME da spostare all'avvio dell app (controlla prima dove la chiede)
     if (status != PermissionStatus.granted) {
       print("Permission not granted!");
       return;

@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:i_sonno/router/homeRouter.dart';
+import 'package:i_sonno/service/local_notifications.dart';
 
+//TODO
+//call the requestExactAlarmsPermission() exposed by the AndroidFlutterNotificationsPlugin
+//call the requestFullScreenIntentPermission()      "           "
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await LocalNotifications.initialize();
   await AndroidAlarmManager.initialize();
 
   runApp(const AlarmApp());

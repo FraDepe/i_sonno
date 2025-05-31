@@ -47,6 +47,7 @@ dependencies:
   pedometer: ^4.1.1
   flutter_activity_recognition: ^4.0.0
   path_provider: ^2.1.5
+  flutter_local_notifications: ^19.2.1
 
 dev_dependencies:
   flutter_test:
