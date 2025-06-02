@@ -11,7 +11,8 @@ import 'package:i_sonno/service/local_notifications.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalNotifications.initialize();
-  await AndroidAlarmManager.initialize();
+  //await AndroidAlarmManager.initialize();
+  await LocalNotifications.requestNotificationPermission();
 
   runApp(const AlarmApp());
 }
