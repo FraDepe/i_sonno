@@ -107,7 +107,16 @@ class _SensorAppState extends State<SensorApp> {
     final yStdev = standardDeviation(points.map((p) => p.dy).toList());
     final zStdev = standardDeviation(points.map((p) => p.dz).toList());
 
-    final isShaking = (_axis==0)?xStdev>160:(_axis==1)?yStdev>150:zStdev>150;
+    int upperThresh = 250;
+    int lowerThresh = 150;
+
+    bool isX = xStdev>upperThresh&&yStdev<lowerThresh&&zStdev<lowerThresh;
+    bool isY = yStdev>upperThresh&&xStdev<lowerThresh&&zStdev<lowerThresh;
+    bool isZ = zStdev>upperThresh&&xStdev<lowerThresh&&yStdev<lowerThresh;
+
+    print("x:"+xStdev.toString()+"y:"+yStdev.toString()+"z:"+zStdev.toString());
+
+    final isShaking = (_axis==0)?isX:(_axis==1)?isY:isZ;
     
     return isShaking;
   }
