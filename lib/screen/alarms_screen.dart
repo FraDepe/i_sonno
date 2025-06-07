@@ -95,22 +95,21 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
               itemBuilder: (context, index) {
                 var alarm = alarms[index];
                 return Card(
-                  color: Color(0xFF1E1E1E),
+                  //color: Colors.deepPurple,
                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
                     contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     title: Text(
                       alarm.time.format(context),
-                      style: TextStyle(fontSize: 36, color: Colors.white70),
+                      style: TextStyle(fontSize: 36),
                     ),
                     subtitle: Text(
                       alarm.days.join(" "),
-                      style: TextStyle(color: Colors.white54),
+                      style: TextStyle(),
                     ),
                     trailing: Switch(
                       value: alarm.isActive,
                       onChanged: (value) => _toggleAlarm(index, value),
-                      activeColor: Color(0xFFFFA726),
                     ),
                   ),
                 );

@@ -13,6 +13,7 @@ class AddAlarmScreen extends StatefulWidget {
 class _AddAlarmScreenState extends State<AddAlarmScreen> {
   TimeOfDay selectedTime = TimeOfDay(hour: 6, minute: 0);
   List<String> selectedDays = []; //Oggi o domani, in base all'orario scelto
+  List<String> days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì","Venerdì","Sabato","Domenica"];
   String ringtone = '';
   bool vibration = true;
 
@@ -48,7 +49,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
     final List<String>? results = await showDialog(
       context: context,
       builder: (BuildContext context) {
-        return MultiSelect(items: dayList);
+        return MultiSelect(items: dayList, initiallySelected: selectedDays);
       }
     );
 
@@ -90,8 +91,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
     double deviceHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
-      appBar: AppBar(title: Text('Nuova Sveglia'), backgroundColor: const Color.fromARGB(255, 131, 110, 110)),
+      appBar: AppBar(title: Text('Nuova Sveglia')),
       body: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -104,12 +104,14 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                 style: TextButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.amber),
+                    side: BorderSide(),
                   ),
+                  minimumSize: Size(100,100)
                 ),
+
                 child: Text(
                   '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
-                  style: TextStyle(fontSize: deviceWidth * 0.06, color: Colors.black),
+                  style: TextStyle(fontSize: deviceWidth * 0.06),
                 ),
               ),
             ),
@@ -119,21 +121,22 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ElevatedButton(
-                  onPressed: _showMultiSelection,
-                  child: const Text("Ripeti") //ricorda che se non viene selezionato nulla => autoDelete = true
-                ),
-                Wrap(
-                  spacing: deviceWidth * 0.03,
-                  children: selectedDays.map((day) => 
-                    Chip(
-                      label: Text(day.substring(0,3)),
-                      shape: ContinuousRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    )
-                  ).toList(),
-                ),
+                Text('Ripeti'),
+                GestureDetector(
+                onTap: () {
+                  _showMultiSelection();
+                },
+                child: Container(
+                  child:Wrap(
+                    spacing: deviceWidth * 0.03,
+                    children: days.map((day) =>   
+                      Container(
+                        child: (selectedDays.contains(day))?Text(day.substring(0,2), style:TextStyle(color: Colors.white)):Text(day.substring(0,2), style:TextStyle(color: Colors.grey)),
+                      )
+                    ).toList(),
+                  ),
+                )
+              )
               ],
             ),
             Divider(
@@ -142,9 +145,14 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Text("Suoneria"),
+                Spacer(),
                 ElevatedButton(
                   onPressed: _selectRingtone,
-                  child: const Text("Suoneria") //ricorda che se non viene selezionato nulla => ringtone = assets/Default.mp3
+                  child: const Text("Default"), //ricorda che se non viene selezionato nulla => ringtone = assets/Default.mp3
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all<Color>(Colors.deepPurple)
+                  )             
                 ),
                 Text(ringtone)
               ],
@@ -158,8 +166,27 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                 Text("Vibrazione"),
                 Switch(
                   value: vibration,
-                  onChanged: _toggleVibration
-                )
+                  onChanged: _toggleVibration,
+                  trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return Colors.black; // track when ON
+                      }
+                      return Colors.black; // track when OFF
+                    }),
+                    thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        print("on");
+                        return Colors.green; // thumb when ON
+                      }
+                      return Colors.white; // thumb when OFF
+                    }),
+                    trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return Colors.green; // outline when ON
+                      }
+                      return Colors.white; // outline when OFF
+                    }),
+                 )
               ],
             ),
             Divider(
@@ -170,12 +197,12 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
               children: [
                 ElevatedButton(
                   onPressed: _submit,
-                  style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFFFA726)),
+                  style: ElevatedButton.styleFrom(),
                   child: Text('Annulla'),
                 ),
                 ElevatedButton(
                   onPressed: _submit,
-                  style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFFFA726)),
+                  style: ElevatedButton.styleFrom(),
                   child: Text('Salva'),
                 ),
               ],

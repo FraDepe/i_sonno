@@ -52,10 +52,12 @@ class AlarmApp extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
           ),
         ),
-        cardColor: const Color(0xFF1E1E1E),
+        cardTheme: const CardTheme(
+          color: Colors.deepPurple,
+        ),
         textTheme: const TextTheme(
           titleLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white70),
+          bodyMedium: TextStyle(color: Colors.white),
         ),
         switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith<Color>((states) {

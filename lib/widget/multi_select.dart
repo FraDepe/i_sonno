@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class MultiSelect extends StatefulWidget {
   final List<String> items;
-  const MultiSelect({super.key, required this.items});
+  final List<String> initiallySelected;
+  const MultiSelect({super.key, required this.items, required this.initiallySelected});
 
   @override
   State<StatefulWidget> createState() => _MultiSelectState();
@@ -10,7 +11,13 @@ class MultiSelect extends StatefulWidget {
 
 class _MultiSelectState extends State<MultiSelect> {
 
-  final List<String> _selectedItems = [];
+  late List<String> _selectedItems = [];
+
+    @override
+    void initState() {
+      super.initState();
+      _selectedItems = List<String>.from(widget.initiallySelected);
+    }
 
   void _itemChange(String itemValue, bool isSelected) {
     setState(() {
