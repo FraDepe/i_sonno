@@ -13,7 +13,9 @@ import 'package:sensors_plus/sensors_plus.dart';
 
 
 class PedometerApp extends StatefulWidget {
-  const PedometerApp({super.key});
+  const PedometerApp({required this.alarmId, super.key});
+
+  final int alarmId;
 
   @override
   _PedometerAppState createState() => _PedometerAppState();
@@ -130,6 +132,7 @@ class _PedometerAppState extends State<PedometerApp> {
 
   @override
   void dispose() {
+    debugPrint('Dispose');
     _timer?.cancel();
     _accSub?.cancel();
     super.dispose();
@@ -138,52 +141,49 @@ class _PedometerAppState extends State<PedometerApp> {
  
  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Sensor Data')),
-        body: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 60),
-                  const Center(
-                    // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
-                    child: Text('Cammina fino a completamento della barra'),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sensor Data')),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 60),
+                const Center(
+                  // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
+                  child: Text('Cammina fino a completamento della barra'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      LinearProgressIndicator(
+                        value: _progress,
+                        minHeight: 20,
+                        backgroundColor: Colors.grey[300],
+                      ),const SizedBox(height: 20),
+                      Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
+                      const SizedBox(height: 60),
+                      Center(child: Text(task_completed)),
+                      Icon(
+                        isWalking ? Icons.directions_walk_rounded
+                                  : Icons.accessibility_new_rounded,
+                        size: 240,
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        LinearProgressIndicator(
-                          value: _progress,
-                          minHeight: 20,
-                          backgroundColor: Colors.grey[300],
-                          color: Colors.blue,
-                        ),const SizedBox(height: 20),
-                        Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
-                        const SizedBox(height: 60),
-                        Center(child: Text(task_completed)),
-                        Icon(
-                          isWalking ? Icons.directions_walk_rounded
-                                    : Icons.accessibility_new_rounded,
-                          size: 240,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.popUntil(context, (route) => route.settings.name == '/'),
-          child: const Icon(Icons.backspace),
-        ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.popUntil(context, (route) => route.settings.name == '/'),
+        child: const Icon(Icons.backspace),
       ),
     );
   }

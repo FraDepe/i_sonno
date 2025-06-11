@@ -62,7 +62,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
       context,
       MaterialPageRoute<void>(
         builder: (context) =>
-            PlayingAlarmScreen(alarmSettings: alarms.alarms.first),
+            PlayingAlarmScreen(alarmId: alarms.alarms.first.id),
       ),
     );
     debugPrint('Return from Ringing screen');
@@ -129,7 +129,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
               onPressed: () async {
                 await Navigator.push(
                   context, MaterialPageRoute(
-                    builder: (context) => const PedometerApp(),
+                    builder: (context) => const PedometerApp(alarmId: 0,),
                     settings: const RouteSettings(name: '/testPedometer'),
                   ),
                 );

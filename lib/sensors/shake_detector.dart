@@ -21,9 +21,9 @@ class Offset3D {
 }
 
 class SensorApp extends StatefulWidget {
-  const SensorApp({required this.alarmSettings, super.key});
+  const SensorApp({required this.alarmId, super.key});
 
-  final AlarmSettings alarmSettings;
+  final int alarmId;
 
   @override
   _SensorAppState createState() => _SensorAppState();
@@ -49,6 +49,7 @@ class _SensorAppState extends State<SensorApp> {
   int _axis = 0;
   String _axis_text = '';
   static double _progress = 0;
+  bool isNavigating = false;
 
   @override
   void initState() {
@@ -69,39 +70,45 @@ class _SensorAppState extends State<SensorApp> {
         }
       });
 
-        if (_progress < 1 && detectStandingStill(_path)) {
-          if (_progress > 1/300) {
-            setState(() {
-              _progress -= 1/300;
-            });
-            //debugPrint("Movite");
-          } else if (_progress > 0 && _progress < 1/300) {
-            setState(() {
-              _progress = 0;
-            });
-          }
-        }
-
-        if (detectShake(_path)) {
-          debugPrint('Shake detected!');
+      if (_progress < 1 && detectStandingStill(_path)) {
+        if (_progress > 1/300) {
           setState(() {
-            _progress += 1/200;
+            _progress -= 1/300;
+          });
+          //debugPrint("Movite");
+        } else if (_progress > 0 && _progress < 1/300) {
+          setState(() {
+            _progress = 0;
+          });
+        }
+      }
+
+      if (detectShake(_path)) {
+        debugPrint('Shake detected!');
+        setState(() {
+          _progress += 1/10; //FIXME rimeti almeno 1/180
+        });
+
+        if (_progress >= 1 && !isNavigating) {
+          setState(() {
+            _progress = 1;
+            task_completed='Il task è completato!';
           });
 
-          if (_progress >= 1) {
-            setState(() {
-              _progress = 1;
-              task_completed='Il task è completato!';
-            });
+          isNavigating = true;
 
-            await Alarm.stop(widget.alarmSettings.id);
+          await Alarm.stop(widget.alarmId);
 
+          if (mounted) {
             await Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => const PedometerApp(),
+              builder: (_) => PedometerApp(alarmId: widget.alarmId),
               settings: const RouteSettings(name: '/testPedometer'),
             ),);
           }
+
+          isNavigating = false;
         }
+      }
     });
   }
 
@@ -153,48 +160,47 @@ class _SensorAppState extends State<SensorApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Sensor Data')),
-        body: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 60),
-                  Center(
-                    // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
-                    child: Text("Shakera il telefono sull'asse delle "+_axis_text+' al completamento della barra')
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sensor Data')),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 60),
+                Center(
+                  // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
+                  child: Text(
+                    "Ruota il telefono sull'asse delle $_axis_text al completamento della barra",
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        LinearProgressIndicator(
-                          value: _progress,
-                          minHeight: 20,
-                          backgroundColor: Colors.grey[300],
-                          color: Colors.blue,
-                        ),
-                        const SizedBox(height: 20),
-                        Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
-                        const SizedBox(height: 60),
-                        Center(child: Text(task_completed)),
-                      ],
-                    ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      LinearProgressIndicator(
+                        value: _progress,
+                        minHeight: 20,
+                        backgroundColor: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 20),
+                      Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
+                      const SizedBox(height: 60),
+                      Center(child: Text(task_completed)),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.popUntil(context, (route) => route.settings.name == '/'),
-          child: const Icon(Icons.backspace),
-        ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.popUntil(context, (route) => route.settings.name == '/'),
+        child: const Icon(Icons.backspace),
       ),
     );
   }

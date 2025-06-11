@@ -7,9 +7,9 @@ import 'package:i_Sonno_Beta/sensors/shake_detector.dart';
 import 'package:logging/logging.dart';
 
 class PlayingAlarmScreen extends StatefulWidget {
-  const PlayingAlarmScreen({required this.alarmSettings, super.key});
+  const PlayingAlarmScreen({required this.alarmId, super.key});
 
-  final AlarmSettings alarmSettings;
+  final int alarmId;
 
   @override
   _PlayingAlarmScreen createState() => _PlayingAlarmScreen();
@@ -24,8 +24,8 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   void initState() {
     super.initState();
     _ringingSubscription = Alarm.ringing.listen((alarms) {
-      if (alarms.containsId(widget.alarmSettings.id)) return;
-      _log.info('Alarm ${widget.alarmSettings.id} stopped ringing.');
+      if (alarms.containsId(widget.alarmId)) return;
+      _log.info('Alarm ${widget.alarmId} stopped ringing.');
       _ringingSubscription?.cancel();
       if (mounted) Navigator.pop(context);
     });
@@ -39,7 +39,7 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
 
   Future<void> _stopAlarm() async {
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) =>  SensorApp(alarmSettings: widget.alarmSettings,),
+      builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
       settings: const RouteSettings(name: '/playingAlarm/firstTask'),
     ),);
     
