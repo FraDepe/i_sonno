@@ -18,7 +18,7 @@ Future<void> main() async {
     MaterialApp(
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.black,
+        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
         primaryColor: Colors.deepPurple,
         colorScheme: const ColorScheme.dark(
           primary: Colors.deepPurple,
@@ -26,10 +26,10 @@ Future<void> main() async {
           surface: Colors.black,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
-          onSurface: Colors.white70,
+          onSurface: Color.fromARGB(255, 230, 230, 230),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Colors.deepPurple,
+          backgroundColor: Color.fromARGB(255, 133, 86, 216),
           foregroundColor: Colors.white,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(

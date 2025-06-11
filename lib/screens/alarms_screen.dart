@@ -8,6 +8,7 @@ import 'package:i_Sonno_Beta/screens/playing_alarm.dart';
 import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:i_Sonno_Beta/services/notifications.dart';
 import 'package:i_Sonno_Beta/services/permission.dart';
+import 'package:intl/intl.dart';
 
 class AlarmsScreen extends StatefulWidget {
   const AlarmsScreen({super.key});
@@ -79,6 +80,30 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
     if (res != null && res == true) unawaited(loadAlarms());
   }
 
+  String getNameOfDay(DateTime date) {
+    final nameDay = DateFormat('EEEE').format(date);
+    final ymdDate = DateFormat('dd/MM/yyyy').format(date);
+
+    switch (nameDay) {
+      case 'Monday':
+        return 'Lunedì $ymdDate';
+      case 'Tuesday':
+        return 'Martedì $ymdDate';
+      case 'Wednesday':
+        return 'Mercoledì $ymdDate';
+      case 'Thursday':
+        return 'Giovedì $ymdDate';
+      case 'Friday':
+        return 'Venerdì $ymdDate';
+      case 'Saturday':
+        return 'Sabato $ymdDate';
+      case 'Sunday':
+        return 'Domenica $ymdDate';
+      default:
+        return ymdDate;
+    }
+  }
+
   @override
   void dispose() {
     debugPrint('disponse');
@@ -93,7 +118,9 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
-        title: const Text('Sveglie'),
+        title: const Text(
+          'Sveglie',
+          style: TextStyle(color: Colors.white),),
       ),
       body:  Column(
         children: [
@@ -124,6 +151,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
                       TimeOfDay.fromDateTime(alarm.dateTime).format(context),
                       style: const TextStyle(fontSize: 36),
                     ),
+                    subtitle: Text(getNameOfDay(alarm.dateTime)),
                     trailing: const Icon(
                       IconData(0xe21a, fontFamily: 'MaterialIcons'),
                       applyTextScaling: true,
@@ -136,10 +164,11 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        label: const Text('Aggiungi sveglia'),
         onPressed: () => navigateToAlarmScreen(null),
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+        elevation: 6,
+        icon: const Icon(Icons.add),
       ),
     );
   }

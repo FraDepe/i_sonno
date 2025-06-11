@@ -2,6 +2,7 @@ import 'package:alarm/alarm.dart';
 //import 'package:i_sonno/widget/multi_select.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AddAlarmScreen extends StatefulWidget {
   const AddAlarmScreen({super.key, this.alarmSettings});
@@ -17,6 +18,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
 
   late bool creating;
   late DateTime selectedDateTime;
+  late String nameOfTheDay;
   late bool loopAudio;
   late bool vibrate;
   late double? volume;
@@ -32,6 +34,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
     if (creating) {
       selectedDateTime = DateTime.now().add(const Duration(minutes: 1));
       selectedDateTime = selectedDateTime.copyWith(second: 0, millisecond: 0);
+      nameOfTheDay = getNameOfDay(selectedDateTime);
       loopAudio = true;
       vibrate = true;
       volume = null;
@@ -40,6 +43,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
       assetAudio = 'assets/white_lady.mp3';
     } else {
       selectedDateTime = widget.alarmSettings!.dateTime;
+      nameOfTheDay = getNameOfDay(selectedDateTime);
       loopAudio = widget.alarmSettings!.loopAudio;
       vibrate = widget.alarmSettings!.vibrate;
       volume = widget.alarmSettings!.volumeSettings.volume;
@@ -49,20 +53,27 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
     }
   }
 
-  String getDay() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final difference = selectedDateTime.difference(today).inDays;
+  String getNameOfDay(DateTime date) {
+    final nameDay = DateFormat('EEEE').format(date);
+    final ymdDate = DateFormat('dd/MM/yyyy').format(date);
 
-    switch (difference) {
-      case 0:
-        return 'Oggi';
-      case 1:
-        return 'Domani';
-      case 2:
-        return 'Dopo domani';
+    switch (nameDay) {
+      case 'Monday':
+        return 'Lunedì $ymdDate';
+      case 'Tuesday':
+        return 'Martedì $ymdDate';
+      case 'Wednesday':
+        return 'Mercoledì $ymdDate';
+      case 'Thursday':
+        return 'Giovedì $ymdDate';
+      case 'Friday':
+        return 'Venerdì $ymdDate';
+      case 'Saturday':
+        return 'Sabato $ymdDate';
+      case 'Sunday':
+        return 'Domenica $ymdDate';
       default:
-        return 'In $difference giorni';
+        return ymdDate;
     }
   }
 
@@ -131,6 +142,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
         if (selectedDateTime.isBefore(now)) {
           selectedDateTime = selectedDateTime.add(const Duration(days: 1));
         }
+        nameOfTheDay = getNameOfDay(selectedDateTime);
       });
     }
   }
@@ -275,29 +287,44 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
     final deviceHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nuova Sveglia')),
+      appBar: AppBar(title: const Text('Nuova Sveglia', style: TextStyle(color: Colors.white),)),
       body: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
             SizedBox(
               width: deviceWidth * 0.7,
-              height: deviceHeight * 0.08,
+              height: deviceHeight * 0.09,
               child: TextButton(
                 onPressed: _pickTime,
                 style: TextButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(),
                   ),
                   minimumSize: const Size(100, 100),
+                  //backgroundColor: Colors.limeAccent
                 ),
                 child: Text(
                   '${selectedDateTime.hour.toString().padLeft(2, '0')}:${selectedDateTime.minute.toString().padLeft(2, '0')}',
-                  style: TextStyle(fontSize: deviceWidth * 0.06),
+                  style: TextStyle(fontSize: deviceWidth * 0.08),
                   textScaler: const TextScaler.linear(1.7),
                 ),
               ),
+            ),
+            SizedBox(
+              height: deviceHeight * 0.015,
+            ),
+            Center(
+              child: Text(
+                nameOfTheDay,
+                textScaler: const TextScaler.linear(1.3),
+                style: const TextStyle(
+                  color: Color.fromARGB(255, 209, 182, 255),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: deviceHeight * 0.04,
             ),
             const Divider(
               height: 10,
@@ -310,8 +337,8 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Suoneria'),
-                    Text(getRingtoneName(assetAudio)),
+                    const Text('Suoneria', textScaler: TextScaler.linear(1.2),),
+                    Text(getRingtoneName(assetAudio), textScaler: const TextScaler.linear(1.2),),
                   ],
                 ),
               ),
@@ -327,7 +354,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Vibrazione'),
+                    const Text('Vibrazione', textScaler: TextScaler.linear(1.2),),
                     Switch(
                       value: vibrate,
                       onChanged: (value) => setState(() => vibrate = value),
@@ -341,13 +368,13 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                         if (states.contains(WidgetState.selected)) {
                           return Colors.green; // thumb when ON
                         }
-                        return Colors.white;
+                        return const Color.fromARGB(255, 163, 163, 163);
                       }),
                       trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
                         if (states.contains(WidgetState.selected)) {
                           return Colors.green; // outline when ON
                         }
-                        return Colors.white;
+                        return const Color.fromARGB(255, 163, 163, 163);
                       }),
                     ),
                   ],
@@ -356,6 +383,9 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
             ),
             const Divider(
               height: 10,
+            ),
+            SizedBox(
+              height: deviceHeight * 0.035,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

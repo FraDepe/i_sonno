@@ -101,7 +101,7 @@ class _PedometerAppState extends State<PedometerApp> {
 
   debugPrint(stDev.toString());
   // Gioca con questo valore in base a test reali
-  return stDev > 0.8 && stDev < 1.8;
+  return stDev > 0.6 && stDev < 2;
 }
 
   void _startProgressTimer() {
