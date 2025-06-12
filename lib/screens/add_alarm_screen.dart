@@ -161,7 +161,6 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
       vibrate: vibrate,
       assetAudioPath: assetAudio,
       volumeSettings: volumeSettings,
-      allowAlarmOverlap: true,
       androidStopAlarmOnTermination: false,
       notificationSettings: NotificationSettings(
         title: 'Sveglia',
@@ -294,7 +293,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
           children: [
             SizedBox(
               width: deviceWidth * 0.7,
-              height: deviceHeight * 0.09,
+              height: deviceHeight * 0.20,
               child: TextButton(
                 onPressed: _pickTime,
                 style: TextButton.styleFrom(
@@ -393,7 +392,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                 ElevatedButton(
                   onPressed: deleteAlarm,
                   style: ElevatedButton.styleFrom(),
-                  child: const Text('Elimina'),
+                  child: Text((creating)?"Annulla":"Elimina"),
                 ),
                 ElevatedButton(
                   onPressed: saveAlarm,

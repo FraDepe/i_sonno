@@ -66,7 +66,12 @@ class _PedometerAppState extends State<PedometerApp> {
       _status = status;      
     });
 
-    if (status.status == 'walking' && isReallyWalking) {
+    /**if (status.status == 'walking' && isReallyWalking) {
+      _startProgressTimer();
+    } else {
+      _stopProgressTimer();
+    }*/
+    if (status.status == 'walking') {
       _startProgressTimer();
     } else {
       _stopProgressTimer();
@@ -112,7 +117,8 @@ class _PedometerAppState extends State<PedometerApp> {
       if (_status?.status == 'walking') {
         setState(() {
           isWalking = true;
-          _progress += 1/40;
+          //_progress += 1/40;  FIXME
+          _progress += 1/10;
           if (_progress > 1) {
             _progress = 1;
             Alarm.stopAll(); //FIXME deve avere l'id della sveglia originale per poi spegnere quelle successive +1, +2, +3, +4 altrimenti le spegne tutte

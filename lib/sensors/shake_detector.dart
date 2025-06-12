@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Offset3D {
 
@@ -98,14 +99,15 @@ class _SensorAppState extends State<SensorApp> {
           isNavigating = true;
 
           await Alarm.stop(widget.alarmId);
-
+          _gyroSub.pause();
+          debugPrint(mounted.toString());
           if (mounted) {
             await Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => PedometerApp(alarmId: widget.alarmId),
               settings: const RouteSettings(name: '/testPedometer'),
             ),);
           }
-
+          _gyroSub.resume();
           isNavigating = false;
         }
       }
@@ -160,25 +162,26 @@ class _SensorAppState extends State<SensorApp> {
 
   @override
   Widget build(BuildContext context) {
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(title: const Text('Sensor Data')),
-      body: Stack(
+      body: Stack(      
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 60),
                 Center(
-                  // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
-                  child: Text(
-                    "Ruota il telefono sull'asse delle $_axis_text al completamento della barra",
-                  ),
+                  child:SvgPicture.asset(
+                    'assets/icons/shake.svg',
+                    height: 200,
+                    width: 200,
+                  )
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
+                const SizedBox(height: 40),
+                Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       LinearProgressIndicator(
@@ -187,10 +190,29 @@ class _SensorAppState extends State<SensorApp> {
                         backgroundColor: Colors.grey[300],
                       ),
                       const SizedBox(height: 20),
-                      Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
-                      const SizedBox(height: 60),
-                      Center(child: Text(task_completed)),
+                      Text('${(_progress * 100).toStringAsFixed(0)}% completato',
+                            style: TextStyle(
+                            fontSize: (18),
+                          ),),
+
+                      const SizedBox(height: 40),
+                      Center(
+                        child: Text(task_completed,
+                        style: TextStyle(
+                              fontSize: (18),
+                            ),
+                        )
+                      ),
                     ],
+                  ),
+                const SizedBox(height: 20),
+                 Center(
+                  // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
+                  child: Text(
+                    "Ruota il telefono sull'asse delle $_axis_text",
+                    style: TextStyle(
+                      fontSize: (20),
+                    ),
                   ),
                 ),
               ],
