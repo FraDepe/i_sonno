@@ -392,7 +392,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                 ElevatedButton(
                   onPressed: deleteAlarm,
                   style: ElevatedButton.styleFrom(),
-                  child: Text((creating)?"Annulla":"Elimina"),
+                  child: Text(creating ? 'Annulla' : 'Elimina'),
                 ),
                 ElevatedButton(
                   onPressed: saveAlarm,

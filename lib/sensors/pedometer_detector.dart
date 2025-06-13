@@ -1,5 +1,3 @@
-// ignore_for_file: lines_longer_than_80_chars
-
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
@@ -9,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-
 
 
 class PedometerApp extends StatefulWidget {
@@ -37,15 +34,32 @@ class _PedometerAppState extends State<PedometerApp> {
   StreamSubscription? _accSub;
 
   bool isWalking = false;
-
-  static double _progress = 0.0;
   String task_completed = '';
+  bool isNavigating = false;
 
+  static final ValueNotifier<double> _progress = ValueNotifier(0);
 
   @override
   void initState() {
     super.initState();
-    _progress = 0;
+
+    _progress.value = 0.0;
+
+    _progress.addListener(() {
+      if(_progress.value >= 1 && !isNavigating) {
+        isNavigating = true;
+
+        _timer?.cancel();
+        _accSub?.cancel();
+
+        Alarm.stopAll(); //FIXME deve avere l'id della sveglia originale per poi spegnere quelle successive +1, +2, +3, +4 altrimenti le spegne tutte
+        
+        Navigator.popUntil(context, (route) => route.settings.name == '/');
+
+        isNavigating = false;
+      }
+    });
+
     _initPedometer();
     _initAccelerometer();
   }
@@ -62,15 +76,9 @@ class _PedometerAppState extends State<PedometerApp> {
   }
 
   void _onStatusChanged(PedestrianStatus status) {
-    setState(() {
-      _status = status;      
-    });
+    _status = status;      
 
-    /**if (status.status == 'walking' && isReallyWalking) {
-      _startProgressTimer();
-    } else {
-      _stopProgressTimer();
-    }*/
+    //if (status.status == 'walking' && isReallyWalking) {
     if (status.status == 'walking') {
       _startProgressTimer();
     } else {
@@ -80,9 +88,7 @@ class _PedometerAppState extends State<PedometerApp> {
 
   void _onError(error) {
     debugPrint('Pedestrian Status error: $error');
-    setState(() {
-      _status = null;
-    });
+    _status = null;
   }
 
   void _initAccelerometer() {
@@ -115,30 +121,37 @@ class _PedometerAppState extends State<PedometerApp> {
     _timer?.cancel(); // ferma un eventuale timer precedente
     _timer = Timer.periodic(const Duration(seconds: 1), (_) { //FIXME prova con poco meno di un secondo
       if (_status?.status == 'walking') {
-        setState(() {
-          isWalking = true;
-          //_progress += 1/40;  FIXME
-          _progress += 1/10;
-          if (_progress > 1) {
-            _progress = 1;
-            Alarm.stopAll(); //FIXME deve avere l'id della sveglia originale per poi spegnere quelle successive +1, +2, +3, +4 altrimenti le spegne tutte
-            Navigator.popUntil(context, (route) => route.settings.name == '/');
+        if (mounted) {
+          setState(() {
+            isWalking = true;
+            _progress.value += 1/8;
+          });
+        }
+
+        if (_progress.value > 1) {
+          if (mounted) {
+            setState(() {
+              _progress.value = 1;
+            });
           }
-        });
+        }
+
       }
     });
   }
 
   void _stopProgressTimer() {
-    setState(() {
-      isWalking = false;
-    });
+    if (mounted) {
+      setState(() {
+        isWalking = false;
+      });
+    }
     _timer?.cancel();
   }
 
   @override
   void dispose() {
-    debugPrint('Dispose');
+    debugPrint('------------------------- Dispose ---------------------------');
     _timer?.cancel();
     _accSub?.cancel();
     super.dispose();
@@ -167,11 +180,11 @@ class _PedometerAppState extends State<PedometerApp> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       LinearProgressIndicator(
-                        value: _progress,
+                        value: _progress.value,
                         minHeight: 20,
                         backgroundColor: Colors.grey[300],
                       ),const SizedBox(height: 20),
-                      Text('${(_progress * 100).toStringAsFixed(0)}% completato'),
+                      Text('${(_progress.value * 100).toStringAsFixed(0)}% completato'),
                       const SizedBox(height: 60),
                       Center(child: Text(task_completed)),
                       Icon(

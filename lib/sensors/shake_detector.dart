@@ -3,10 +3,10 @@ import 'dart:math';
 
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class Offset3D {
 
@@ -49,8 +49,9 @@ class _SensorAppState extends State<SensorApp> {
   String task_completed = '';
   int _axis = 0;
   String _axis_text = '';
-  static double _progress = 0;
   bool isNavigating = false;
+
+  static final ValueNotifier<double> _progress = ValueNotifier(0);
 
   @override
   void initState() {
@@ -58,28 +59,27 @@ class _SensorAppState extends State<SensorApp> {
 
     _axis = Random().nextInt(3);
     _axis_text = (_axis==0)?'x':(_axis==1)?'y':'z';
-    _progress=0.0;
+    _progress.value = 0.0;
     _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event) async {
 
       final point = Offset3D(event.x, event.y, event.z) * scaleFactor;
 
       setState(() {
-        
         _path.add(point);
         if (_path.length > bufferSize) {
           _path.removeAt(0);
         }
       });
 
-      if (_progress < 1 && detectStandingStill(_path)) {
-        if (_progress > 1/300) {
+      if (_progress.value < 1 && detectStandingStill(_path)) {
+        if (_progress.value > 1/300) {
           setState(() {
-            _progress -= 1/300;
+            _progress.value -= 1/300;
           });
           //debugPrint("Movite");
-        } else if (_progress > 0 && _progress < 1/300) {
+        } else if (_progress.value > 0 && _progress.value < 1/300) {
           setState(() {
-            _progress = 0;
+            _progress.value = 0;
           });
         }
       }
@@ -87,29 +87,33 @@ class _SensorAppState extends State<SensorApp> {
       if (detectShake(_path)) {
         debugPrint('Shake detected!');
         setState(() {
-          _progress += 1/10; //FIXME rimeti almeno 1/180
+          _progress.value += 1/10; //FIXME rimeti almeno 1/180
         });
 
-        if (_progress >= 1 && !isNavigating) {
+        if (_progress.value >= 1) {
           setState(() {
-            _progress = 1;
+            _progress.value = 1;
             task_completed='Il task è completato!';
           });
-
-          isNavigating = true;
-
-          await Alarm.stop(widget.alarmId);
-          _gyroSub.pause();
-          debugPrint(mounted.toString());
-          if (mounted) {
-            await Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => PedometerApp(alarmId: widget.alarmId),
-              settings: const RouteSettings(name: '/testPedometer'),
-            ),);
-          }
-          _gyroSub.resume();
-          isNavigating = false;
         }
+      }
+    });
+
+    _progress.addListener(() async {
+      if(_progress.value >= 1 && !isNavigating) {
+        isNavigating = true;
+
+        await Alarm.stop(widget.alarmId);
+        await _gyroSub.cancel();
+        
+        if (mounted) {
+          await Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => PedometerApp(alarmId: widget.alarmId),
+            settings: const RouteSettings(name: '/testPedometer'),
+          ),);
+        }
+
+        isNavigating = false;
       }
     });
   }
@@ -155,6 +159,7 @@ class _SensorAppState extends State<SensorApp> {
 
   @override
   void dispose() {
+    debugPrint('+++++++++++++++++++++++++ DISPOSE ++++++++++++++++++++++++++');
     _gyroSub.cancel();
     //_sendTimer.cancel();
     super.dispose();
@@ -178,30 +183,29 @@ class _SensorAppState extends State<SensorApp> {
                     'assets/icons/shake.svg',
                     height: 200,
                     width: 200,
-                  )
+                  ),
                 ),
                 const SizedBox(height: 40),
                 Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       LinearProgressIndicator(
-                        value: _progress,
+                        value: _progress.value,
                         minHeight: 20,
                         backgroundColor: Colors.grey[300],
                       ),
                       const SizedBox(height: 20),
-                      Text('${(_progress * 100).toStringAsFixed(0)}% completato',
-                            style: TextStyle(
-                            fontSize: (18),
-                          ),),
-
+                      Text('${(_progress.value * 100).toStringAsFixed(0)}% completato',
+                        style: const TextStyle(
+                        fontSize: 18,
+                      ),),
                       const SizedBox(height: 40),
                       Center(
                         child: Text(task_completed,
-                        style: TextStyle(
-                              fontSize: (18),
-                            ),
-                        )
+                          style:  const TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -210,8 +214,8 @@ class _SensorAppState extends State<SensorApp> {
                   // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
                   child: Text(
                     "Ruota il telefono sull'asse delle $_axis_text",
-                    style: TextStyle(
-                      fontSize: (20),
+                    style: const TextStyle(
+                      fontSize: 20,
                     ),
                   ),
                 ),

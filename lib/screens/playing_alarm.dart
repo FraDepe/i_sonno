@@ -53,35 +53,35 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   Widget build(BuildContext context) {
     final deviceWidth = MediaQuery.of(context).size.width;
     final deviceHeight = MediaQuery.of(context).size.height;
-   return Scaffold(
-  body: Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: deviceWidth * 0.7,
-          height: deviceHeight * 0.20,
-          child: Text(
-            '${TimeOfDay.now().hour.toString().padLeft(2, '0')}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
-            style: TextStyle(fontSize: deviceWidth * 0.1),
-            textScaler: const TextScaler.linear(2.5),
-            textAlign: TextAlign.center,
-          ),
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: deviceWidth * 0.7,
+              height: deviceHeight * 0.20,
+              child: Text(
+                '${TimeOfDay.now().hour.toString().padLeft(2, '0')}:${(TimeOfDay.now().minute + 1).toString().padLeft(2, '0')}',
+                style: TextStyle(fontSize: deviceWidth * 0.1),
+                textScaler: const TextScaler.linear(2.5),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 40), // spacing between text and button
+            ElevatedButton(
+              onPressed: _stopAlarm,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
+              child: const Text(
+                'Spegni sveglia',
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 40), // spacing between text and button
-        ElevatedButton(
-          onPressed: _stopAlarm,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          ),
-          child: const Text(
-            'Spegni sveglia',
-            style: TextStyle(fontSize: 24),
-          ),
-        ),
-      ],
-    ),
-  ),
-);
+      ),
+    );
   }
 }
