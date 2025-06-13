@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:i_Sonno_Beta/services/alarm_state.dart';
 
 
 class PedometerApp extends StatefulWidget {
@@ -38,6 +39,7 @@ class _PedometerAppState extends State<PedometerApp> {
   bool isNavigating = false;
 
   static final ValueNotifier<double> _progress = ValueNotifier(0);
+  static late ValueNotifier<DateTime?> _nextAlarmTime = ValueNotifier<DateTime?>(null);
 
   @override
   void initState() {
@@ -62,6 +64,22 @@ class _PedometerAppState extends State<PedometerApp> {
 
     _initPedometer();
     _initAccelerometer();
+    Alarm.getAlarm(widget.alarmId + 1).then((alarm) {
+      _nextAlarmTime.value = alarm?.dateTime;
+    });
+    _nextAlarmTime.addListener(() {
+      if(DateTime.now().isAfter(_nextAlarmTime.value!.subtract(const Duration(seconds: 60))) && !isNavigating && DateTime.now().isBefore(_nextAlarmTime.value!)) {
+        debugPrint("sto tornando indietro");
+        isNavigating = true;  
+
+        _timer?.cancel();
+        _accSub?.cancel();
+        
+        Navigator.popUntil(context, (route) => route.settings.name == '/');
+
+        isNavigating = false;
+      }
+    });
   }
 
   Future<void> _initPedometer() async {
@@ -112,7 +130,7 @@ class _PedometerAppState extends State<PedometerApp> {
       .reduce((a, b) => a + b) / accBuffer.length;
   final stDev = sqrt(variance);
 
-  debugPrint(stDev.toString());
+  //debugPrint(stDev.toString());
   // Gioca con questo valore in base a test reali
   return stDev > 1 && stDev < 2.3;
 }

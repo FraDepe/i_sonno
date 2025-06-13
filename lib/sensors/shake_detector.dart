@@ -138,7 +138,7 @@ class _SensorAppState extends State<SensorApp> {
     bool isY = yStdev>upperThresh&&xStdev<lowerThresh&&zStdev<lowerThresh;
     bool isZ = zStdev>upperThresh&&xStdev<lowerThresh&&yStdev<lowerThresh;
 
-    debugPrint('x:${xStdev}y:${yStdev}z:$zStdev');
+    //debugPrint('x:${xStdev}y:${yStdev}z:$zStdev');
 
     final isShaking = (_axis==0)?isX:(_axis==1)?isY:isZ;
     

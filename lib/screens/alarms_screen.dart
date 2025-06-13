@@ -47,11 +47,11 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
 
   Future<void> loadAlarms() async {
     final updatedAlarms = await Alarm.getAlarms();
-    debugPrint('Load alarms: $updatedAlarms');
+    //debugPrint('Load alarms: $updatedAlarms');
     updatedAlarms..sort((a, b) => a.dateTime.isBefore(b.dateTime) ? 0 : 1)
-    ..removeWhere((item) => item.payload == 'hidden');
+      ..removeWhere((item) => item.payload == 'hidden');
     setState(() {
-      alarms = updatedAlarms;
+      alarms = updatedAlarms;     
     });
   }
 
@@ -59,7 +59,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
     debugPrint('Ringing pre ringing screen');
     if (alarms.alarms.isEmpty || AlarmState.isAlarmActive) return;
     AlarmState.isAlarmActive = true;
-    debugPrint('Ringing post check alarms');
+    debugPrint('Ringing post check alarms');                                        
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
