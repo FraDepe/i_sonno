@@ -8,6 +8,7 @@ import 'package:i_Sonno_Beta/screens/playing_alarm.dart';
 import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:i_Sonno_Beta/services/notifications.dart';
 import 'package:i_Sonno_Beta/services/permission.dart';
+import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:intl/intl.dart';
 
 class AlarmsScreen extends StatefulWidget {
@@ -56,7 +57,8 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
 
   Future<void> ringingAlarmsChanged(AlarmSet alarms) async {
     debugPrint('Ringing pre ringing screen');
-    if (alarms.alarms.isEmpty) return;
+    if (alarms.alarms.isEmpty || AlarmState.isAlarmActive) return;
+    AlarmState.isAlarmActive = true;
     debugPrint('Ringing post check alarms');
     await Navigator.push(
       context,
@@ -65,6 +67,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
             PlayingAlarmScreen(alarmId: alarms.alarms.first.id),
       ),
     );
+    AlarmState.isAlarmActive = false;
     debugPrint('Return from Ringing screen');
     unawaited(loadAlarms());
   }

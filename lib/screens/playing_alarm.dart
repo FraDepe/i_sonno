@@ -4,6 +4,7 @@ import 'package:alarm/alarm.dart';
 import 'package:alarm/utils/alarm_set.dart';
 import 'package:flutter/material.dart';
 import 'package:i_Sonno_Beta/sensors/shake_detector.dart';
+import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:logging/logging.dart';
 
 class PlayingAlarmScreen extends StatefulWidget {
@@ -24,6 +25,8 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   void initState() {
     super.initState();
     _ringingSubscription = Alarm.ringing.listen((alarms) {
+      final currentRoute = ModalRoute.of(context)?.settings.name;
+      debugPrint(currentRoute);
       if (alarms.containsId(widget.alarmId)) return;
       _log.info('Alarm ${widget.alarmId} stopped ringing.');
       _ringingSubscription?.cancel();
@@ -33,6 +36,7 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
 
   @override
   void dispose() {
+    AlarmState.isAlarmActive = false;
     _ringingSubscription?.cancel();
     super.dispose();
   }
