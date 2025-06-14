@@ -107,8 +107,7 @@ class _PedometerAppState extends State<PedometerApp> {
   void _onStatusChanged(PedestrianStatus status) {
     _status = status;      
 
-    //if (status.status == 'walking' && isReallyWalking) {
-    if (status.status == 'walking' && !isNavigating) {
+    if (status.status == 'walking' && isReallyWalking) {
       _startProgressTimer();
     } else {
       _stopProgressTimer();
@@ -153,7 +152,7 @@ class _PedometerAppState extends State<PedometerApp> {
         if (mounted) {
           setState(() {
             isWalking = true;
-            _progress.value += 1/8;
+            _progress.value += 1/40;
           });
         }
 
