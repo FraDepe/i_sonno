@@ -17,7 +17,7 @@ class PedometerApp extends StatefulWidget {
   _PedometerAppState createState() => _PedometerAppState();
 }
 
-//FIXME spostare il calcolo della camminata in un widget, non nell'intera schermata. 
+//TODO si potrebbe spostare il calcolo della camminata in un widget 
 //Migliora le performance
 //inoltre si potrebbe chiamare il controllo isReallyWalking meno volte
 class _PedometerAppState extends State<PedometerApp> {
@@ -39,7 +39,7 @@ class _PedometerAppState extends State<PedometerApp> {
 
   final ValueNotifier<double> _progress = ValueNotifier(0);
   late VoidCallback _progressListener;
-  DateTime? _nextAlarmTime = null;
+  DateTime? _nextAlarmTime;
 
   @override
   void initState() {
@@ -47,14 +47,17 @@ class _PedometerAppState extends State<PedometerApp> {
 
     _progress.value = 0.0;
 
-    _progressListener = () {
+    _progressListener = () async {
       if(_progress.value >= 1 && !isNavigating) {
         isNavigating = true;
 
         _timer?.cancel();
-        _accSub?.cancel();
+        await _accSub?.cancel();
 
-        Alarm.stopAll(); //FIXME deve avere l'id della sveglia originale per poi spegnere quelle successive +1, +2, +3, +4 altrimenti le spegne tutte
+        for (var i = 1; i < 5; i++) {
+          final id = widget.alarmId + i;
+          await Alarm.stop(id);
+        }
 
         Navigator.popUntil(context, (route) => route.settings.name == '/');
 
@@ -73,10 +76,10 @@ class _PedometerAppState extends State<PedometerApp> {
     });
 
     
-    _alarmTimer = Timer.periodic(Duration(seconds:1),(timer){
-        DateTime _now = DateTime.now();
+    _alarmTimer = Timer.periodic(const Duration(seconds:1),(timer){
+        final now = DateTime.now();
         //debugPrint("NOW: "+_now.toString()+"NEXT: "+_nextAlarmTime!.subtract(const Duration(seconds: 60)).toString());
-        if(!(_nextAlarmTime==null) &&_now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && _now.isBefore(_nextAlarmTime!)) {
+        if(!(_nextAlarmTime==null) &&now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && now.isBefore(_nextAlarmTime!)) {
           //debugPrint("sto tornando indietro");
           isNavigating = true;
 
@@ -145,7 +148,7 @@ class _PedometerAppState extends State<PedometerApp> {
 
   void _startProgressTimer() {
     _timer?.cancel(); // ferma un eventuale timer precedente
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) { //FIXME prova con poco meno di un secondo
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) { //Si potrebbe provare con poco meno di un secondo
       if (_status?.status == 'walking' && !isNavigating) {
         if (mounted) {
           setState(() {

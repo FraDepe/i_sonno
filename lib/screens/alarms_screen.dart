@@ -5,7 +5,6 @@ import 'package:alarm/utils/alarm_set.dart';
 import 'package:flutter/material.dart';
 import 'package:i_Sonno_Beta/screens/add_alarm_screen.dart';
 import 'package:i_Sonno_Beta/screens/playing_alarm.dart';
-import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:i_Sonno_Beta/services/notifications.dart';
 import 'package:i_Sonno_Beta/services/permission.dart';
