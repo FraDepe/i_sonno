@@ -17,9 +17,6 @@ class PedometerApp extends StatefulWidget {
   _PedometerAppState createState() => _PedometerAppState();
 }
 
-//TODO si potrebbe spostare il calcolo della camminata in un widget 
-//Migliora le performance
-//inoltre si potrebbe chiamare il controllo isReallyWalking meno volte
 class _PedometerAppState extends State<PedometerApp> {
 
   Timer? _timer;
@@ -72,15 +69,12 @@ class _PedometerAppState extends State<PedometerApp> {
 
     Alarm.getAlarm(widget.alarmId + 1).then((alarm) {
       _nextAlarmTime = alarm?.dateTime;
-      //debugPrint("NEXT ALARM: "+_nextAlarmTime!.toString());
     });
 
     
     _alarmTimer = Timer.periodic(const Duration(seconds:1),(timer){
         final now = DateTime.now();
-        //debugPrint("NOW: "+_now.toString()+"NEXT: "+_nextAlarmTime!.subtract(const Duration(seconds: 60)).toString());
         if(!(_nextAlarmTime==null) &&now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && now.isBefore(_nextAlarmTime!)) {
-          //debugPrint("sto tornando indietro");
           isNavigating = true;
 
           _timer?.cancel();
@@ -104,6 +98,7 @@ class _PedometerAppState extends State<PedometerApp> {
     _pedestrianStatusStream.listen(_onStatusChanged, onError: _onError);
   }
 
+  //Magari farlo periodico ogni x ms
   void _onStatusChanged(PedestrianStatus status) {
     _status = status;      
 
@@ -140,14 +135,12 @@ class _PedometerAppState extends State<PedometerApp> {
       .reduce((a, b) => a + b) / accBuffer.length;
   final stDev = sqrt(variance);
 
-  //debugPrint(stDev.toString());
-  // Gioca con questo valore in base a test reali
   return stDev > 1 && stDev < 2.3;
 }
 
   void _startProgressTimer() {
     _timer?.cancel(); // ferma un eventuale timer precedente
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) { //Si potrebbe provare con poco meno di un secondo
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) { 
       if (_status?.status == 'walking' && !isNavigating) {
         if (mounted) {
           setState(() {
@@ -202,7 +195,6 @@ class _PedometerAppState extends State<PedometerApp> {
               children: [
                 const SizedBox(height: 60),
                 const Center(
-                  // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
                   child: Text('Cammina fino a completamento della barra'),
                 ),
                 Padding(

@@ -37,8 +37,6 @@ class _SensorAppState extends State<SensorApp> {
   Stream<GyroscopeEvent> gyroscopeEventStream({
     Duration samplingPeriod = SensorInterval.normalInterval,
   }) {
-    //fixme Perchè usiamo due import uguali ma uno ha un nome?
-    //E soprattutto perchè se usiamo solamente l'import senza nome l'app va in Stack Overflow?
     return sensors.gyroscopeEventStream(samplingPeriod: samplingPeriod);
   }
 
@@ -76,7 +74,6 @@ class _SensorAppState extends State<SensorApp> {
           setState(() {
             _progress.value -= 1/300;
           });
-          //debugPrint("Movite");
         } else if (_progress.value > 0 && _progress.value < 1/300) {
           setState(() {
             _progress.value = 0;
@@ -138,8 +135,6 @@ class _SensorAppState extends State<SensorApp> {
     bool isY = yStdev>upperThresh&&xStdev<lowerThresh&&zStdev<lowerThresh;
     bool isZ = zStdev>upperThresh&&xStdev<lowerThresh&&yStdev<lowerThresh;
 
-    //debugPrint('x:${xStdev}y:${yStdev}z:$zStdev');
-
     final isShaking = (_axis==0)?isX:(_axis==1)?isY:isZ;
     
     return isShaking;
@@ -161,7 +156,6 @@ class _SensorAppState extends State<SensorApp> {
   void dispose() {
     debugPrint('+++++++++++++++++++++++++ DISPOSE ++++++++++++++++++++++++++');
     _gyroSub.cancel();
-    //_sendTimer.cancel();
     super.dispose();
   }
 
@@ -211,7 +205,6 @@ class _SensorAppState extends State<SensorApp> {
                   ),
                 const SizedBox(height: 20),
                  Center(
-                  // Forse non è tanto uno shake ma più una rotazione (ruota il telefono...)
                   child: Text(
                     "Ruota il telefono sull'asse delle $_axis_text",
                     style: const TextStyle(

@@ -46,7 +46,6 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
 
   Future<void> loadAlarms() async {
     final updatedAlarms = await Alarm.getAlarms();
-    //debugPrint('Load alarms: $updatedAlarms');
     updatedAlarms..sort((a, b) => a.dateTime.isBefore(b.dateTime) ? 0 : 1)
       ..removeWhere((item) => item.payload == 'hidden');
     setState(() {
@@ -132,7 +131,6 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
               itemBuilder: (context, index) {
                 final alarm = alarms[index];
                 return Card(
-                  //color: const Color(0xFF1E1E1E),
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
