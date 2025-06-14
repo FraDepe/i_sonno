@@ -25,6 +25,7 @@ class PedometerApp extends StatefulWidget {
 class _PedometerAppState extends State<PedometerApp> {
 
   Timer? _timer;
+  Timer? _alarmTimer;
 
   late Stream<PedestrianStatus> _pedestrianStatusStream;
   PedestrianStatus? _status;
@@ -39,7 +40,7 @@ class _PedometerAppState extends State<PedometerApp> {
   bool isNavigating = false;
 
   static final ValueNotifier<double> _progress = ValueNotifier(0);
-  static late ValueNotifier<DateTime?> _nextAlarmTime = ValueNotifier<DateTime?>(null);
+  DateTime? _nextAlarmTime = null;
 
   @override
   void initState() {
@@ -65,21 +66,26 @@ class _PedometerAppState extends State<PedometerApp> {
     _initPedometer();
     _initAccelerometer();
     Alarm.getAlarm(widget.alarmId + 1).then((alarm) {
-      _nextAlarmTime.value = alarm?.dateTime;
+      _nextAlarmTime = alarm?.dateTime;
+      //debugPrint("NEXT ALARM: "+_nextAlarmTime!.toString());
     });
-    _nextAlarmTime.addListener(() {
-      if(DateTime.now().isAfter(_nextAlarmTime.value!.subtract(const Duration(seconds: 60))) && !isNavigating && DateTime.now().isBefore(_nextAlarmTime.value!)) {
-        debugPrint("sto tornando indietro");
-        isNavigating = true;  
 
-        _timer?.cancel();
-        _accSub?.cancel();
-        
-        Navigator.popUntil(context, (route) => route.settings.name == '/');
+    _alarmTimer = Timer.periodic(Duration(seconds:1),(timer){
 
-        isNavigating = false;
-      }
-    });
+        DateTime _now = DateTime.now();
+        //debugPrint("NOW: "+_now.toString()+"NEXT: "+_nextAlarmTime!.subtract(const Duration(seconds: 60)).toString());
+        if(_now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && _now.isBefore(_nextAlarmTime!)) {
+          //debugPrint("sto tornando indietro");
+          isNavigating = true;  
+
+          _timer?.cancel();
+          _accSub?.cancel();
+          
+          Navigator.popUntil(context, (route) => route.settings.name == '/');
+
+          isNavigating = false;
+        }
+      });
   }
 
   Future<void> _initPedometer() async {
@@ -170,6 +176,7 @@ class _PedometerAppState extends State<PedometerApp> {
   @override
   void dispose() {
     debugPrint('------------------------- Dispose ---------------------------');
+    _alarmTimer?.cancel();
     _timer?.cancel();
     _accSub?.cancel();
     super.dispose();
