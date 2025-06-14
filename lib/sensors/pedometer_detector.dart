@@ -7,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:i_Sonno_Beta/services/alarm_state.dart';
-
 
 class PedometerApp extends StatefulWidget {
   const PedometerApp({required this.alarmId, super.key});
@@ -39,7 +37,8 @@ class _PedometerAppState extends State<PedometerApp> {
   String task_completed = '';
   bool isNavigating = false;
 
-  static final ValueNotifier<double> _progress = ValueNotifier(0);
+  final ValueNotifier<double> _progress = ValueNotifier(0);
+  late VoidCallback _progressListener;
   DateTime? _nextAlarmTime = null;
 
   @override
@@ -48,7 +47,7 @@ class _PedometerAppState extends State<PedometerApp> {
 
     _progress.value = 0.0;
 
-    _progress.addListener(() {
+    _progressListener = () {
       if(_progress.value >= 1 && !isNavigating) {
         isNavigating = true;
 
@@ -56,15 +55,18 @@ class _PedometerAppState extends State<PedometerApp> {
         _accSub?.cancel();
 
         Alarm.stopAll(); //FIXME deve avere l'id della sveglia originale per poi spegnere quelle successive +1, +2, +3, +4 altrimenti le spegne tutte
-        
+
         Navigator.popUntil(context, (route) => route.settings.name == '/');
 
         isNavigating = false;
       }
-    });
+    };
+
+    _progress.addListener(_progressListener);
 
     _initPedometer();
     _initAccelerometer();
+
     Alarm.getAlarm(widget.alarmId + 1).then((alarm) {
       _nextAlarmTime = alarm?.dateTime;
       //debugPrint("NEXT ALARM: "+_nextAlarmTime!.toString());
@@ -76,11 +78,11 @@ class _PedometerAppState extends State<PedometerApp> {
         //debugPrint("NOW: "+_now.toString()+"NEXT: "+_nextAlarmTime!.subtract(const Duration(seconds: 60)).toString());
         if(_now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && _now.isBefore(_nextAlarmTime!)) {
           //debugPrint("sto tornando indietro");
-          isNavigating = true;  
+          isNavigating = true;
 
           _timer?.cancel();
           _accSub?.cancel();
-          
+
           Navigator.popUntil(context, (route) => route.settings.name == '/');
 
           isNavigating = false;
@@ -103,7 +105,7 @@ class _PedometerAppState extends State<PedometerApp> {
     _status = status;      
 
     //if (status.status == 'walking' && isReallyWalking) {
-    if (status.status == 'walking') {
+    if (status.status == 'walking' && !isNavigating) {
       _startProgressTimer();
     } else {
       _stopProgressTimer();
@@ -144,7 +146,7 @@ class _PedometerAppState extends State<PedometerApp> {
   void _startProgressTimer() {
     _timer?.cancel(); // ferma un eventuale timer precedente
     _timer = Timer.periodic(const Duration(seconds: 1), (_) { //FIXME prova con poco meno di un secondo
-      if (_status?.status == 'walking') {
+      if (_status?.status == 'walking' && !isNavigating) {
         if (mounted) {
           setState(() {
             isWalking = true;
@@ -179,6 +181,8 @@ class _PedometerAppState extends State<PedometerApp> {
     _alarmTimer?.cancel();
     _timer?.cancel();
     _accSub?.cancel();
+
+    _progress.removeListener(_progressListener);
     super.dispose();
   }
 

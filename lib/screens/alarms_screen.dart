@@ -51,7 +51,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
     updatedAlarms..sort((a, b) => a.dateTime.isBefore(b.dateTime) ? 0 : 1)
       ..removeWhere((item) => item.payload == 'hidden');
     setState(() {
-      alarms = updatedAlarms;     
+      alarms = updatedAlarms;
     });
   }
 
@@ -59,7 +59,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
     debugPrint('Ringing pre ringing screen');
     if (alarms.alarms.isEmpty || AlarmState.isAlarmActive) return;
     AlarmState.isAlarmActive = true;
-    debugPrint('Ringing post check alarms');                                        
+    debugPrint('Ringing post check alarms');
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
@@ -127,19 +127,6 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
       ),
       body:  Column(
         children: [
-          Center(
-            child: ElevatedButton(
-              onPressed: () async {
-                await Navigator.push(
-                  context, MaterialPageRoute(
-                    builder: (context) => const PedometerApp(alarmId: 0,),
-                    settings: const RouteSettings(name: '/testPedometer'),
-                  ),
-                );
-              },
-              child: const Text('Pedometer'),
-            ),
-          ),
           Expanded(
             child: ListView.builder(
               itemCount: alarms.length,
