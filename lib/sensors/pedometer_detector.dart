@@ -72,11 +72,11 @@ class _PedometerAppState extends State<PedometerApp> {
       //debugPrint("NEXT ALARM: "+_nextAlarmTime!.toString());
     });
 
+    
     _alarmTimer = Timer.periodic(Duration(seconds:1),(timer){
-
         DateTime _now = DateTime.now();
         //debugPrint("NOW: "+_now.toString()+"NEXT: "+_nextAlarmTime!.subtract(const Duration(seconds: 60)).toString());
-        if(_now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && _now.isBefore(_nextAlarmTime!)) {
+        if(!(_nextAlarmTime==null) &&_now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && _now.isBefore(_nextAlarmTime!)) {
           //debugPrint("sto tornando indietro");
           isNavigating = true;
 
