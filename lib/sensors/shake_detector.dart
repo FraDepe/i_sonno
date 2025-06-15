@@ -186,7 +186,8 @@ class _SensorAppState extends State<SensorApp> {
                 const SizedBox(height: 60),
                 Center(
                   child: Text(
-                    "Ruota il telefono lungo l'asse delle $_axis_text",
+                    //"Ruota il telefono lungo l'asse delle $_axis_text",
+                    "Ruota il telefono come indicato in figura",
                     style: TextStyle(
                       fontSize: deviceWidth * 0.045,
                     ),
