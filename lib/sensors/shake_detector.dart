@@ -41,6 +41,7 @@ class _SensorAppState extends State<SensorApp> {
   }
 
   late StreamSubscription<GyroscopeEvent> _gyroSub;
+  late String imageIcon;
 
   final List<Offset3D> _path = [const Offset3D(200, 400, 0)];
   final double scaleFactor = 60;
@@ -56,6 +57,13 @@ class _SensorAppState extends State<SensorApp> {
     super.initState();
 
     _axis = Random().nextInt(3);
+    
+    imageIcon = (_axis==0)
+      ? 'assets/icons/icon1.svg'
+      : (_axis==1) 
+        ? 'assets/icons/icon3.svg'
+        : 'assets/icons/icon2.svg';
+
     _axis_text = (_axis==0)?'x':(_axis==1)?'y':'z';
     _progress.value = 0.0;
     _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event) async {
@@ -164,62 +172,57 @@ class _SensorAppState extends State<SensorApp> {
     final deviceWidth = MediaQuery.of(context).size.width;
     final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(title: const Text('Sensor Data')),
-      body: Stack(      
+      appBar: AppBar(
+        title: const Text('Sensor Data'),
+        automaticallyImplyLeading: false,
+      ),
+      body: Stack(
         children: [
           Padding(
             padding: const EdgeInsets.all(32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 60),
                 Center(
-                  child:SvgPicture.asset(
-                    'assets/icons/shake.svg',
-                    height: 200,
-                    width: 200,
+                  child: Text(
+                    "Ruota il telefono lungo l'asse delle $_axis_text",
+                    style: TextStyle(
+                      fontSize: deviceWidth * 0.045,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
                 Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      LinearProgressIndicator(
-                        value: _progress.value,
-                        minHeight: 20,
-                        backgroundColor: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 20),
-                      Text('${(_progress.value * 100).toStringAsFixed(0)}% completato',
-                        style: const TextStyle(
-                        fontSize: 18,
-                      ),),
-                      const SizedBox(height: 40),
-                      Center(
-                        child: Text(task_completed,
-                          style:  const TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 20),
-                 Center(
-                  child: Text(
-                    "Ruota il telefono sull'asse delle $_axis_text",
-                    style: const TextStyle(
-                      fontSize: 20,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    LinearProgressIndicator(
+                      value: _progress.value,
+                      minHeight: 20,
+                      backgroundColor: Colors.grey[300],
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    Text('${(_progress.value * 100).toStringAsFixed(0)}% completato',
+                      style: TextStyle(
+                        fontSize: deviceWidth * 0.045,
+                      ),
+                    ),
+                    const SizedBox(height: 60),
+                    Center(
+                      child:
+                        SvgPicture.asset(
+                          imageIcon,
+                          height: deviceHeight * 0.3,
+                          width: deviceWidth * 0.3,
+                        ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.popUntil(context, (route) => route.settings.name == '/'),
-        child: const Icon(Icons.backspace),
       ),
     );
   }

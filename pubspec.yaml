@@ -40,3 +40,9 @@ flutter:
     - assets/marimba.mp3
     - assets/white_lady.mp3
     - assets/icons/shake.svg
+    - assets/icons/xAxis.png
+    - assets/icons/yAxis.png
+    - assets/icons/zAxis.png
+    - assets/icons/icon1.svg
+    - assets/icons/icon2.svg
+    - assets/icons/icon3.svg

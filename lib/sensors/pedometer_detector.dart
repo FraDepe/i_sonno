@@ -72,19 +72,19 @@ class _PedometerAppState extends State<PedometerApp> {
     });
 
     
-    _alarmTimer = Timer.periodic(const Duration(seconds:1),(timer){
-        final now = DateTime.now();
-        if(!(_nextAlarmTime==null) &&now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && now.isBefore(_nextAlarmTime!)) {
-          isNavigating = true;
+    _alarmTimer = Timer.periodic(const Duration(seconds:1), (timer) {
+      final now = DateTime.now();
+      if(!(_nextAlarmTime==null) &&now.isAfter(_nextAlarmTime!.subtract(const Duration(seconds: 5))) && !isNavigating && now.isBefore(_nextAlarmTime!)) {
+        isNavigating = true;
 
-          _timer?.cancel();
-          _accSub?.cancel();
+        _timer?.cancel();
+        _accSub?.cancel();
 
-          Navigator.popUntil(context, (route) => route.settings.name == '/');
+        Navigator.popUntil(context, (route) => route.settings.name == '/');
 
-          isNavigating = false;
-        }
-      });
+        isNavigating = false;
+      }
+    });
   }
 
   Future<void> _initPedometer() async {
@@ -135,7 +135,7 @@ class _PedometerAppState extends State<PedometerApp> {
       .reduce((a, b) => a + b) / accBuffer.length;
   final stDev = sqrt(variance);
 
-  return stDev > 1 && stDev < 2.3;
+  return /*stDev > 1.3 &&*/ stDev < 4;
 }
 
   void _startProgressTimer() {
@@ -184,48 +184,57 @@ class _PedometerAppState extends State<PedometerApp> {
  
  @override
   Widget build(BuildContext context) {
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(title: const Text('Sensor Data')),
+      appBar: AppBar(
+        title: const Text('Sensor Data'),
+        automaticallyImplyLeading: false,
+      ),
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 60),
-                const Center(
-                  child: Text('Cammina fino a completamento della barra'),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      LinearProgressIndicator(
-                        value: _progress.value,
-                        minHeight: 20,
-                        backgroundColor: Colors.grey[300],
-                      ),const SizedBox(height: 20),
-                      Text('${(_progress.value * 100).toStringAsFixed(0)}% completato'),
-                      const SizedBox(height: 60),
-                      Center(child: Text(task_completed)),
-                      Icon(
-                        isWalking ? Icons.directions_walk_rounded
-                                  : Icons.accessibility_new_rounded,
-                        size: 240,
-                      ),
-                    ],
+                Center(
+                  child: Text('Cammina fino al completamento della barra',
+                  textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: deviceWidth * 0.045,
+                    ),
                   ),
+                ),
+                const SizedBox(height: 40,),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    LinearProgressIndicator(
+                      value: _progress.value,
+                      minHeight: 20,
+                      backgroundColor: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 20),
+                    Text('${(_progress.value * 100).toStringAsFixed(0)}% completato',
+                      style: TextStyle(
+                        fontSize: deviceWidth * 0.045,
+                      ),
+                    ),
+                    const SizedBox(height: 60),
+                    Center(child: Text(task_completed)),
+                    Icon(
+                      isWalking ? Icons.directions_walk_rounded
+                                : Icons.accessibility_new_rounded,
+                      size: 240,
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.popUntil(context, (route) => route.settings.name == '/'),
-        child: const Icon(Icons.backspace),
       ),
     );
   }
