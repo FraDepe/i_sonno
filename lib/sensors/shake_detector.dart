@@ -92,7 +92,7 @@ class _SensorAppState extends State<SensorApp> {
       if (detectShake(_path)) {
         debugPrint('Shake detected!');
         setState(() {
-          _progress.value += 1/180; 
+          _progress.value += 1/135; 
         });
 
         if (_progress.value >= 1) {

@@ -90,8 +90,11 @@ class _PedometerAppState extends State<PedometerApp> {
   Future<void> _initPedometer() async {
     final status = await Permission.activityRecognition.status;
     if (status != PermissionStatus.granted) {
-      debugPrint('Permission not granted!');
-      return;
+      final result = await Permission.activityRecognition.request();
+      if (result != PermissionStatus.granted) {
+        debugPrint('Activity Recognition permission denied!');
+        return;
+      }
     }
 
     _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
