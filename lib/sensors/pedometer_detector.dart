@@ -104,8 +104,9 @@ class _PedometerAppState extends State<PedometerApp> {
   //Magari farlo periodico ogni x ms
   void _onStatusChanged(PedestrianStatus status) {
     _status = status;      
-
+    print(status.status.toString() + isReallyWalking.toString());
     if (status.status == 'walking' && isReallyWalking) {
+      
       _startProgressTimer();
     } else {
       _stopProgressTimer();
@@ -137,8 +138,8 @@ class _PedometerAppState extends State<PedometerApp> {
       .map((a) => pow(a - mean, 2))
       .reduce((a, b) => a + b) / accBuffer.length;
   final stDev = sqrt(variance);
-
-  return /*stDev > 1.3 &&*/ stDev < 4;
+  print(stDev);
+  return /*stDev > 1.3 &&*/ stDev < 6;
 }
 
   void _startProgressTimer() {

@@ -163,7 +163,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
       androidStopAlarmOnTermination: false,
       notificationSettings: NotificationSettings(
         title: 'Sveglia',
-        body: 'La sveglia ($id) sta suonando',
+        body: 'La sveglia sta suonando',
         icon: 'notification_icon',
       ),
     );

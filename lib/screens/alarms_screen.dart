@@ -29,6 +29,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint(alarms.toString());
     AlarmPermissions.checkNotificationPermission().then(
       (_) => AlarmPermissions.checkAndroidScheduleExactAlarmPermission().then(
         (_) => AlarmPermissions.checkActivityPermission(),),
@@ -115,7 +116,8 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
 
   @override
   Widget build(BuildContext context) {
-
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -125,6 +127,16 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
       ),
       body:  Column(
         children: [
+           if (alarms.isEmpty) ...[
+            const Spacer(),
+            Center(
+              child: Image.asset(
+                'assets/icons/ic_launcher_foreground.webp',
+                color: Colors.white.withAlpha(100),
+                colorBlendMode: BlendMode.modulate,
+              ),
+            ),
+          ],
           Expanded(
             child: ListView.builder(
               itemCount: alarms.length,
