@@ -5,6 +5,7 @@ import 'package:alarm/utils/alarm_set.dart';
 import 'package:flutter/material.dart';
 import 'package:i_Sonno_Beta/screens/add_alarm_screen.dart';
 import 'package:i_Sonno_Beta/screens/playing_alarm.dart';
+import 'package:i_Sonno_Beta/sensors/level_screen.dart';
 import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:i_Sonno_Beta/services/notifications.dart';
 import 'package:i_Sonno_Beta/services/permission.dart';
@@ -127,16 +128,29 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
       ),
       body:  Column(
         children: [
-           if (alarms.isEmpty) ...[
-            const Spacer(),
-            Center(
-              child: Image.asset(
-                'assets/icons/ic_launcher_foreground.webp',
-                color: Colors.white.withAlpha(100),
-                colorBlendMode: BlendMode.modulate,
-              ),
+//           if (alarms.isEmpty) ...[
+//            const Spacer(),
+//            Center(       TODO Lo voglio portare dietro come sfondo
+//              child: Image.asset(
+//                'assets/icons/ic_launcher_foreground.webp',
+//                color: Colors.white.withAlpha(100),
+//                colorBlendMode: BlendMode.modulate,
+//              ),
+//            ),
+//          ],
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context, MaterialPageRoute(
+                    builder: (context) => const LevelScreen(alarmId: 0,),
+                    settings: const RouteSettings(name: '/testLevel'),
+                  ),
+                );
+              },
+              child: const Text('Level'),
             ),
-          ],
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: alarms.length,
