@@ -4,9 +4,9 @@ import 'dart:math';
 
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
-import 'package:pedometer/pedometer.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:word_generator/data/nouns.dart';
+import 'package:word_generator/word_generator.dart';
 
 class LevelScreen extends StatefulWidget {
   const LevelScreen({required this.alarmId, super.key});
@@ -26,6 +26,8 @@ class _LevelScreenState extends State<LevelScreen> {
 
   double targetY = 0;
 
+  String sentence = '';
+
   //int x = 0;
   //int y = 0;
   //double xDotPosition = 0;
@@ -35,15 +37,18 @@ class _LevelScreenState extends State<LevelScreen> {
     Colors.red,
     Colors.redAccent,
   ];
-  List<ColorSwatch<int>> correctColors = [  //TODO giallo?
+  List<ColorSwatch<int>> correctColors = [  //TODO giallo? oppure facciamo in modo che la linea diventa unica (target + inclinazione) e dello stesso colore
     Colors.green,
     Colors.greenAccent,
   ];
+
+//TODO Nonappena la linea è allineata con quella target, l'app comincia ad ascolare
 
   @override
   void initState() {
     super.initState();
 
+    generateRandomSentence();
     generateRandomTargetTilt();
 
     _accSub = accelerometerEventStream().listen((event) {
@@ -57,7 +62,7 @@ class _LevelScreenState extends State<LevelScreen> {
         //yDotPosition = getYDotPosition(event.y);
         //isCorrectLevel = isCorrectLevel = isWithinTolerance(_average(_yValues) * 9.8, 0.35) /*&& isWithinTolerance(event.x, 0.35)*/;
         isCorrectLevel = (_average(_yValues) - targetY).abs() < 0.015;
-        debugPrint((event.y * 10).round().toString());
+        //debugPrint((atan(_average(_yValues) * 9.8) * (180 / pi)).round().toString());
       });
     });
   }
@@ -107,7 +112,13 @@ class _LevelScreenState extends State<LevelScreen> {
 
   void generateRandomTargetTilt() {
     final random = Random();
-   targetY = (random.nextDouble() * 1.6) - 0.8; // -0.8 to +0.8
+    targetY = (random.nextDouble() * 1.6) - 0.8; // -0.8 to +0.8
+  }
+
+  void generateRandomSentence() {
+    final wordGenerator = WordGenerator();
+    sentence = wordGenerator.randomSentence(3);
+    debugPrint(sentence);
   }
 
   List<ColorSwatch<int>> getBackgroundColor() {
@@ -145,13 +156,13 @@ class _LevelScreenState extends State<LevelScreen> {
             top: 40,
             left: 20,
             child: Text(
-              'Target tilt: ${atan(targetY * 9.8) * (180 / pi)} °',
+              'Target tilt: ${(atan(targetY * 9.8) * (180 / pi)).round()} ° \n Sentence: $sentence',
               style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
-          const Align(
-            alignment: Alignment.center,
-            child: Divider(
+          Align(
+            alignment: Alignment(0, targetY),
+            child: const Divider(
               color: Colors.white,
               thickness: 10,
               indent: 50,

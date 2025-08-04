@@ -677,6 +677,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.13.0"
+  word_generator:
+    dependency: "direct main"
+    description:
+      name: word_generator
+      sha256: "17c7284ef75c4dfb921c247e8be095d0615430864f6b4aa9563f19e888074c29"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.0"
   xdg_directories:
     dependency: transitive
     description:
