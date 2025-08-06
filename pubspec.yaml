@@ -24,6 +24,7 @@ dependencies:
   url_launcher: ^6.3.1
   flutter_svg: ^2.0.7
   word_generator: ^0.5.0
+  speech_to_text: ^7.2.0
 
 dev_dependencies:
   flutter_test:
@@ -48,3 +49,4 @@ flutter:
     - assets/icons/icon2.svg
     - assets/icons/icon3.svg
     - assets/icons/ic_launcher_foreground.webp
+    - assets/sentences.json

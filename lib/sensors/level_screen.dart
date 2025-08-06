@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:word_generator/data/nouns.dart';
-import 'package:word_generator/word_generator.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class LevelScreen extends StatefulWidget {
   const LevelScreen({required this.alarmId, super.key});
@@ -48,20 +47,15 @@ class _LevelScreenState extends State<LevelScreen> {
   void initState() {
     super.initState();
 
-    generateRandomSentence();
+    pickupSentence();
     generateRandomTargetTilt();
 
     _accSub = accelerometerEventStream().listen((event) {
       final normalizedY = scaleY(event.y);
       _addSmoothedValue(normalizedY);
       setState(() {
-        //x = calculateXValue(event);
         yPosition = _average(_yValues);
-        //y = calculateYValue(event);
-        //xDotPosition = getXDotPosition(event.x);
-        //yDotPosition = getYDotPosition(event.y);
-        //isCorrectLevel = isCorrectLevel = isWithinTolerance(_average(_yValues) * 9.8, 0.35) /*&& isWithinTolerance(event.x, 0.35)*/;
-        isCorrectLevel = (_average(_yValues) - targetY).abs() < 0.015;
+        isCorrectLevel = (_average(_yValues) - targetY).abs() < 0.0135;
         //debugPrint((atan(_average(_yValues) * 9.8) * (180 / pi)).round().toString());
       });
     });
@@ -98,16 +92,8 @@ class _LevelScreenState extends State<LevelScreen> {
     }
   }
 
-  //int calculateYValue(AccelerometerEvent event) {
-  //  return (event.y * 10).round();
-  //}
-
-  //int calculateXValue(AccelerometerEvent event) {
-  //  return (event.x * 10 - 2).round();
-  //}
-
   bool isWithinTolerance(double value, double tolerance) {
-   return value.abs() < tolerance;
+    return value.abs() < tolerance;
   }
 
   void generateRandomTargetTilt() {
@@ -115,10 +101,17 @@ class _LevelScreenState extends State<LevelScreen> {
     targetY = (random.nextDouble() * 1.6) - 0.8; // -0.8 to +0.8
   }
 
-  void generateRandomSentence() {
-    final wordGenerator = WordGenerator();
-    sentence = wordGenerator.randomSentence(3);
-    debugPrint(sentence);
+  Future<void> pickupSentence() async{
+    final response = await rootBundle.loadString('assets/sentences.json');
+    final cleaned = response.trim().replaceAll('{', '').replaceAll('}', '').replaceAll('\n', '');
+    final entries = cleaned.split(',');
+    if (entries.isEmpty) return; //FIXME capiamo cosa fare
+    final randomEntry = entries[Random().nextInt(entries.length)];
+    final parts = randomEntry.split(':');
+    if (parts.length < 2) return;//FIXME capiamo cosa fare
+    final phrase = parts.sublist(1).join(':').trim(); // caso con due punti nella frase
+
+    sentence = phrase.replaceAll('"', '').trim();
   }
 
   List<ColorSwatch<int>> getBackgroundColor() {
@@ -156,7 +149,23 @@ class _LevelScreenState extends State<LevelScreen> {
             top: 40,
             left: 20,
             child: Text(
-              'Target tilt: ${(atan(targetY * 9.8) * (180 / pi)).round()} ° \n Sentence: $sentence',
+              'Target tilt: ${(atan(targetY * 9.8) * (180 / pi)).round()} °',
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
+          Positioned(
+            top: 60,
+            left: 20,
+            child: Text(
+              'Angolazione attuale: ${(atan(yPosition * 9.8) * (180 / pi)).round()} °',
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
+          Positioned(
+            top: 80,
+            left: 20,
+            child: Text(
+              'Frase: $sentence',
               style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
@@ -169,7 +178,6 @@ class _LevelScreenState extends State<LevelScreen> {
               endIndent: 50,
             ),
           ),
-          // Barra mobile verticale
           AnimatedAlign(
             duration: const Duration(milliseconds: 100),
             alignment: Alignment(0, yPosition),
@@ -182,41 +190,6 @@ class _LevelScreenState extends State<LevelScreen> {
               ),
             ),
           ),
-          /*Center(
-            child: ClipOval(
-              child: Container(
-                width: 100,
-                height: 100,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Center(
-            child:AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              alignment: Alignment(xDotPosition/10, yDotPosition/10),
-              child: ClipOval(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child:AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              alignment: Alignment(-xDotPosition/10, -yDotPosition/10),
-              child: ClipOval(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ), */
         ],
       ),
     );
