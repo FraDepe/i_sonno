@@ -34,19 +34,20 @@ class _LevelScreenState extends State<LevelScreen> {
   SpeechToText speechToText = SpeechToText();
   bool speechToTextAvailable = false;
   String speechResult = '';
+  bool sentenceCaptured = false;
 
   bool alreadyStarted = false;
+
+  Timer? _levelHoldTimer;
 
   List<ColorSwatch<int>> badColors = [
     Colors.red,
     Colors.redAccent,
   ];
-  List<ColorSwatch<int>> correctColors = [  //TODO giallo? oppure facciamo in modo che la linea diventa unica (target + inclinazione) e dello stesso colore
+  List<ColorSwatch<int>> correctColors = [
     Colors.green,
     Colors.greenAccent,
   ];
-
-//TODO Nonappena la linea è allineata con quella target, l'app comincia ad ascolare
 
   @override
   void initState() {
@@ -56,24 +57,33 @@ class _LevelScreenState extends State<LevelScreen> {
     generateRandomTargetTilt();
     _initSpeech();
 
-    isCorrectLevelListener = () {      
-      if(isCorrectLevel.value && !alreadyStarted) {
-        alreadyStarted = true;
-        debugPrint(speechToTextAvailable.toString());
-        if (speechToTextAvailable) {
-          _startListening();
+    isCorrectLevelListener = () {
+      if(isCorrectLevel.value) {
+        if (_levelHoldTimer == null || !_levelHoldTimer!.isActive) {
+          _levelHoldTimer = Timer(const Duration(seconds: 1), () {
+            if(isCorrectLevel.value && (!alreadyStarted || (alreadyStarted && !sentenceCaptured))) {
+              alreadyStarted = true;
+              debugPrint(speechToTextAvailable.toString());
+              if(speechToTextAvailable && !speechToText.isListening) {
+                _startListening();
+              }
+            }
+          });
         }
+      } else {
+        _levelHoldTimer?.cancel();
+        _levelHoldTimer = null;
       }
     };
 
-    //TODO  Gestire il caso della frase sbagliata e la schermata tra il momendo in cui la frase viene controllata e il passaggio alla schermata successiva
+    //TODO  Gestire schermata tra il momendo in cui la frase viene controllata e il passaggio alla schermata successiva
 
     _accSub = accelerometerEventStream().listen((event) {
       final normalizedY = scaleY(event.y);
       _addSmoothedValue(normalizedY);
       setState(() {
         yPosition = _average(_yValues);
-        isCorrectLevel.value = (_average(_yValues) - targetY).abs() < 0.0135;
+        isCorrectLevel.value = (_average(_yValues) - targetY).abs() < 0.014;
         //debugPrint((atan(_average(_yValues) * 9.8) * (180 / pi)).round().toString());
         debugPrint(isCorrectLevel.value.toString());
       });
@@ -131,10 +141,31 @@ class _LevelScreenState extends State<LevelScreen> {
     );
   }
 
-  void _onSpeechResult(SpeechRecognitionResult result) {
+  Future<void> _onSpeechResult(SpeechRecognitionResult result) async {
+    final preSpeechResult = result.recognizedWords;
+  
     setState(() {
-      speechResult = result.recognizedWords;
+      speechResult = preSpeechResult;
     });
+
+    sentenceCaptured = true;
+
+    if(!speechToText.isListening) {
+      if(isCorrectSentence()) {
+        debugPrint('Forza Roma');
+        //TODO vado avanti, vediamo come
+      } else {
+        //todo forse dovrei mettere qualcosa che notifica l´utente della frase sbagliata
+        generateRandomTargetTilt();
+        await pickupSentence();
+        alreadyStarted = false;
+        sentenceCaptured = false;
+      }
+    }
+  }
+
+  bool isCorrectSentence() {
+    return sentence.toLowerCase() == speechResult.toLowerCase();
   }
 
   void generateRandomTargetTilt() {
@@ -146,11 +177,17 @@ class _LevelScreenState extends State<LevelScreen> {
     final response = await rootBundle.loadString('assets/sentences.json');
     final cleaned = response.trim().replaceAll('{', '').replaceAll('}', '').replaceAll('\n', '');
     final entries = cleaned.split(',');
-    if (entries.isEmpty) return;              //FIXME capiamo cosa fare
+    if (entries.isEmpty) {
+      sentence = 'Sempre forza Roma';
+      return;
+    }
     final randomEntry = entries[Random().nextInt(entries.length)];
     final parts = randomEntry.split(':');
-    if (parts.length < 2) return;             //FIXME capiamo cosa fare
-    final phrase = parts.sublist(1).join(':').trim(); // caso con due punti nella frase
+    if (parts.length < 2) {
+      sentence = 'Sempre forza Roma';
+      return;
+    }
+    final phrase = parts.sublist(1).join(':').trim(); // caso con due punti nella frase (cosa che non accadrà mai)
 
     sentence = phrase.replaceAll('"', '').trim();
   }
@@ -164,6 +201,7 @@ class _LevelScreenState extends State<LevelScreen> {
     debugPrint('------------------------- Dispose ---------------------------');
     isCorrectLevel.removeListener(isCorrectLevelListener);
     _accSub?.cancel();
+    _levelHoldTimer?.cancel();
     super.dispose();
   }
 
