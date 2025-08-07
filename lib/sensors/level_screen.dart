@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 class LevelScreen extends StatefulWidget {
@@ -27,11 +28,15 @@ class _LevelScreenState extends State<LevelScreen> {
 
   String sentence = '';
 
-  //int x = 0;
-  //int y = 0;
-  //double xDotPosition = 0;
-  //double yDotPosition = 0;
-  bool isCorrectLevel = false;
+  final ValueNotifier<bool> isCorrectLevel = ValueNotifier(false);
+  late VoidCallback isCorrectLevelListener;
+
+  SpeechToText speechToText = SpeechToText();
+  bool speechToTextAvailable = false;
+  String speechResult = '';
+
+  bool alreadyStarted = false;
+
   List<ColorSwatch<int>> badColors = [
     Colors.red,
     Colors.redAccent,
@@ -49,16 +54,32 @@ class _LevelScreenState extends State<LevelScreen> {
 
     pickupSentence();
     generateRandomTargetTilt();
+    _initSpeech();
+
+    isCorrectLevelListener = () {      
+      if(isCorrectLevel.value && !alreadyStarted) {
+        alreadyStarted = true;
+        debugPrint(speechToTextAvailable.toString());
+        if (speechToTextAvailable) {
+          _startListening();
+        }
+      }
+    };
+
+    //TODO  Gestire il caso della frase sbagliata e la schermata tra il momendo in cui la frase viene controllata e il passaggio alla schermata successiva
 
     _accSub = accelerometerEventStream().listen((event) {
       final normalizedY = scaleY(event.y);
       _addSmoothedValue(normalizedY);
       setState(() {
         yPosition = _average(_yValues);
-        isCorrectLevel = (_average(_yValues) - targetY).abs() < 0.0135;
+        isCorrectLevel.value = (_average(_yValues) - targetY).abs() < 0.0135;
         //debugPrint((atan(_average(_yValues) * 9.8) * (180 / pi)).round().toString());
+        debugPrint(isCorrectLevel.value.toString());
       });
     });
+
+    isCorrectLevel.addListener(isCorrectLevelListener);
   }
 
   void _addSmoothedValue(double value) {
@@ -78,14 +99,14 @@ class _LevelScreenState extends State<LevelScreen> {
   }
 
   double getXDotPosition(double xValue) {
-    if (isCorrectLevel) {
+    if (isCorrectLevel.value) {
       return 0;
     } else {
       return xValue;
     }
   }
   double getYDotPosition(double yValue) {
-    if (isCorrectLevel) {
+    if (isCorrectLevel.value) {
       return 0;
     } else {
       return yValue;
@@ -94,6 +115,26 @@ class _LevelScreenState extends State<LevelScreen> {
 
   bool isWithinTolerance(double value, double tolerance) {
     return value.abs() < tolerance;
+  }
+
+  Future<void> _initSpeech() async {
+    final available = speechToText.initialize();
+    await available.then((value) {
+      speechToTextAvailable = value;
+    });
+  }
+
+  Future<void> _startListening() async {
+    await speechToText.listen(
+      onResult: _onSpeechResult,
+      listenFor: const Duration(seconds: 4),
+    );
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      speechResult = result.recognizedWords;
+    });
   }
 
   void generateRandomTargetTilt() {
@@ -105,22 +146,23 @@ class _LevelScreenState extends State<LevelScreen> {
     final response = await rootBundle.loadString('assets/sentences.json');
     final cleaned = response.trim().replaceAll('{', '').replaceAll('}', '').replaceAll('\n', '');
     final entries = cleaned.split(',');
-    if (entries.isEmpty) return; //FIXME capiamo cosa fare
+    if (entries.isEmpty) return;              //FIXME capiamo cosa fare
     final randomEntry = entries[Random().nextInt(entries.length)];
     final parts = randomEntry.split(':');
-    if (parts.length < 2) return;//FIXME capiamo cosa fare
+    if (parts.length < 2) return;             //FIXME capiamo cosa fare
     final phrase = parts.sublist(1).join(':').trim(); // caso con due punti nella frase
 
     sentence = phrase.replaceAll('"', '').trim();
   }
 
   List<ColorSwatch<int>> getBackgroundColor() {
-    return isCorrectLevel ? correctColors : badColors;
+    return isCorrectLevel.value ? correctColors : badColors;
   }
 
   @override
   void dispose() {
     debugPrint('------------------------- Dispose ---------------------------');
+    isCorrectLevel.removeListener(isCorrectLevelListener);
     _accSub?.cancel();
     super.dispose();
   }
@@ -154,10 +196,18 @@ class _LevelScreenState extends State<LevelScreen> {
             ),
           ),
           Positioned(
+            top: 40,
+            left: 175,
+            child: Text(
+              'Angolazione attuale: ${(atan(yPosition * 9.8) * (180 / pi)).round()} °',
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
+          Positioned(
             top: 60,
             left: 20,
             child: Text(
-              'Angolazione attuale: ${(atan(yPosition * 9.8) * (180 / pi)).round()} °',
+              'Frase: $sentence',
               style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
@@ -165,7 +215,7 @@ class _LevelScreenState extends State<LevelScreen> {
             top: 80,
             left: 20,
             child: Text(
-              'Frase: $sentence',
+              'Frase: $speechResult',
               style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
