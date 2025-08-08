@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -40,6 +41,9 @@ class _LevelScreenState extends State<LevelScreen> {
 
   Timer? _levelHoldTimer;
 
+  bool showSuccess = false;
+  bool showError = false;
+
   List<ColorSwatch<int>> badColors = [
     Colors.red,
     Colors.redAccent,
@@ -56,6 +60,8 @@ class _LevelScreenState extends State<LevelScreen> {
     pickupSentence();
     generateRandomTargetTilt();
     _initSpeech();
+
+    showSuccess = false;
 
     isCorrectLevelListener = () {
       if(isCorrectLevel.value) {
@@ -152,10 +158,38 @@ class _LevelScreenState extends State<LevelScreen> {
 
     if(!speechToText.isListening) {
       if(isCorrectSentence()) {
+        setState(() {
+          showSuccess = true;
+        });
+
+        await Future.delayed(const Duration(seconds: 2));
+
         debugPrint('Forza Roma');
-        //TODO vado avanti, vediamo come
+        Navigator.popUntil(context, (route) => route.settings.name == '/');
+
+        //^^^^^^^^^^^^^^^^^^^^^^^^^
+        //TODO swap
+        //vvvvvvvvvvvvvvvvvvvvvvvvv
+
+        //if (mounted) {
+        //  await Navigator.of(context).push(MaterialPageRoute(
+        //    builder: (_) => PedometerApp(alarmId: widget.alarmId),
+        //    settings: const RouteSettings(name: '/testPedometer'),
+        //  ),);
+        //}
+
       } else {
-        //todo forse dovrei mettere qualcosa che notifica l´utente della frase sbagliata
+        
+        setState(() {
+          showError = true;
+        });
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        setState(() {
+          showError = false;
+        });
+
         generateRandomTargetTilt();
         await pickupSentence();
         alreadyStarted = false;
@@ -278,6 +312,28 @@ class _LevelScreenState extends State<LevelScreen> {
               ),
             ),
           ),
+          if(showSuccess) ...[
+            const ColoredBox (
+              color: Color.fromRGBO(216, 240, 5, 0.63),
+              child: Center(
+                child: Text(
+                  'Frase corretta',     //TODO oppure un'icona che probabilmente è più carina
+                  style: TextStyle(fontSize: 32, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+          if(showError) ...[
+            const ColoredBox (
+              color: Color.fromRGBO(240, 5, 5, 0.631),
+              child: Center(
+                child: Text(
+                  'Frase sbagliata',     //TODO oppure un'icona che probabilmente è più carina
+                  style: TextStyle(fontSize: 32, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
