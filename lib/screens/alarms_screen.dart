@@ -5,6 +5,7 @@ import 'package:alarm/utils/alarm_set.dart';
 import 'package:flutter/material.dart';
 import 'package:i_Sonno_Beta/screens/add_alarm_screen.dart';
 import 'package:i_Sonno_Beta/screens/playing_alarm.dart';
+import 'package:i_Sonno_Beta/sensors/finger_counter_screen.dart';
 import 'package:i_Sonno_Beta/sensors/level_screen.dart';
 import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:i_Sonno_Beta/services/notifications.dart';
@@ -33,7 +34,10 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
     debugPrint(alarms.toString());
     AlarmPermissions.checkNotificationPermission().then(
       (_) => AlarmPermissions.checkAndroidScheduleExactAlarmPermission().then(
-        (_) => AlarmPermissions.checkActivityPermission(),),
+        (_) => AlarmPermissions.checkActivityPermission().then(
+          (_) => AlarmPermissions.checkMicrophonePermission(),
+        ),
+      ),
     );
 
     debugPrint('Init state');
@@ -128,16 +132,6 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
       ),
       body:  Column(
         children: [
-//           if (alarms.isEmpty) ...[
-//            const Spacer(),
-//            Center(       TODO Lo voglio portare dietro come sfondo
-//              child: Image.asset(
-//                'assets/icons/ic_launcher_foreground.webp',
-//                color: Colors.white.withAlpha(100),
-//                colorBlendMode: BlendMode.modulate,
-//              ),
-//            ),
-//          ],
           Center(
             child: ElevatedButton(
               onPressed: () async {
@@ -151,28 +145,52 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
               child: const Text('Level'),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: alarms.length,
-              itemBuilder: (context, index) {
-                final alarm = alarms[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    title: Text(
-                      TimeOfDay.fromDateTime(alarm.dateTime).format(context),
-                      style: const TextStyle(fontSize: 36),
-                    ),
-                    subtitle: Text(getNameOfDay(alarm.dateTime)),
-                    trailing: const Icon(
-                      IconData(0xe21a, fontFamily: 'MaterialIcons'),
-                      applyTextScaling: true,
-                    ),
-                    onTap: () => navigateToAlarmScreen(alarm),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context, MaterialPageRoute(
+                    builder: (context) => const FingerCounterScreen(alarmId: 0,),
+                    settings: const RouteSettings(name: '/testFinger'),
                   ),
                 );
               },
+              child: const Text('Finger'),
+            ),
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                Center(
+                  child: Image.asset(
+                    'assets/icons/ic_launcher_foreground.webp',
+                    color: Colors.white.withAlpha(100),
+                    colorBlendMode: BlendMode.modulate,
+                  ),
+                ),
+                ListView.builder(
+                  itemCount: alarms.length,
+                  itemBuilder: (context, index) {
+                    final alarm = alarms[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        title: Text(
+                          TimeOfDay.fromDateTime(alarm.dateTime).format(context),
+                          style: const TextStyle(fontSize: 36),
+                        ),
+                        subtitle: Text(getNameOfDay(alarm.dateTime)),
+                        trailing: const Icon(
+                          IconData(0xe21a, fontFamily: 'MaterialIcons'),
+                          applyTextScaling: true,
+                        ),
+                        onTap: () => navigateToAlarmScreen(alarm),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],

@@ -171,6 +171,8 @@ class _LevelScreenState extends State<LevelScreen> {
         //TODO swap
         //vvvvvvvvvvvvvvvvvvvvvvvvv
 
+
+        //await Alarm.stop(widget.alarmId);
         //if (mounted) {
         //  await Navigator.of(context).push(MaterialPageRoute(
         //    builder: (_) => PedometerApp(alarmId: widget.alarmId),

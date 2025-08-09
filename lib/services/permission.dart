@@ -50,4 +50,15 @@ class AlarmPermissions {
       );
     }
   }
+
+  static Future<void> checkMicrophonePermission() async {
+    final status = await Permission.microphone.status;
+    if (status.isDenied) {
+      _log.info('Requesting activity permission...');
+      final res = await Permission.microphone.request();
+      _log.info(
+        'Microphone permission ${res.isGranted ? '' : 'not '}granted',
+      );
+    }
+  }
 }

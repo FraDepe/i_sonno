@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:alarm/alarm.dart';
 import 'package:alarm/utils/alarm_set.dart';
@@ -42,11 +43,26 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   }
 
   Future<void> _stopAlarm() async {
-    await Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
-      settings: const RouteSettings(name: '/playingAlarm/firstTask'),
-    ),);
-    
+    switch (Random().nextInt(3)) {
+      case 0:
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/firstTask'),
+        ),);
+        //break TODO capire se serve
+      case 1:
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/firstTask'),
+        ),);
+        //break TODO capire se serve
+      case 2:
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/firstTask'),
+        ),);
+        //break TODO capire se serve
+    }    
   }
 
   @override
