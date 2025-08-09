@@ -32,13 +32,13 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
 
     actualFingersListener = () {
       if(actualFingers.value == targetFingers) {
-        secondsRemaining = 6;
+        secondsRemaining = 5;
+        setState(() {
+          countdownStarted = true;
+        });
         countdownTimer = Timer.periodic(
           const Duration(seconds: 1),
           (timer) {
-            setState(() {
-              countdownStarted = true;
-            });
             if(secondsRemaining > 1) {
               setState(() {
                 secondsRemaining--;
@@ -49,10 +49,21 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
                 countdownStarted = false;
               });
               timer.cancel();
+
+              //await Alarm.stop(widget.alarmId);
+              //if (mounted) {
+              //  await Navigator.of(context).push(MaterialPageRoute(
+              //    builder: (_) => PedometerApp(alarmId: widget.alarmId),
+              //    settings: const RouteSettings(name: '/testPedometer'),
+              //  ),);
+              //}
             }
           }
         );
       } else {
+        setState(() {
+          countdownStarted = false;
+        });
         countdownTimer?.cancel();
       }
     };
@@ -75,9 +86,11 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Count finger Screen'),
+        backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
       ),
       body: Listener(
+        behavior: HitTestBehavior.opaque,
         onPointerDown: (_) {
           setState(() {
             actualFingers.value++;
@@ -90,31 +103,36 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
         },
         child: Stack(
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  radius: 1,
-                  colors: [Color.fromARGB(255, 244, 216, 54),Color.fromARGB(255, 255, 243, 82)],
-                ),
-              ),
-            ),
             Positioned(
               top: 20,
               left: 20,
-              child: Text(
-                actualFingers.value == targetFingers ? 
-                'Mantieni le dita sullo schermo' : 
-                'Metti sullo schermo $targetFingers dita',
-                style: const TextStyle(color: Colors.black, fontSize: 20),
+              child: SizedBox(
+                width: deviceWidth - 40,
+                child: Text(
+                  actualFingers.value == targetFingers ? 
+                  'Mantieni le dita sullo schermo' : 
+                  'Metti sullo schermo $targetFingers dita',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: deviceWidth * 0.045,
+                  ),
+                ),
               ),
             ),
             Positioned(
               top: 50,
               left: 20,
-              child: Text(
-                'Sullo schermo ci sono ${actualFingers.value} dita',
-                style: const TextStyle(color: Colors.black, fontSize: 20),
+              child: SizedBox(
+                width: deviceWidth - 40,
+                child: Text(
+                  'Sullo schermo ci sono ${actualFingers.value} dita',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: deviceWidth * 0.045,
+                  ),
+                ),
               ),
             ),
             if (countdownStarted) ...[
@@ -123,7 +141,10 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
                 left: 185,
                 child: Text(
                   '$secondsRemaining',
-                  style: const TextStyle(color: Colors.black, fontSize: 100),
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 255, 193, 7),
+                    fontSize: 100,
+                  ),
                 ),
               ),
             ]

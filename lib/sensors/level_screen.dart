@@ -45,8 +45,8 @@ class _LevelScreenState extends State<LevelScreen> {
   bool showError = false;
 
   List<ColorSwatch<int>> badColors = [
-    Colors.red,
-    Colors.redAccent,
+    Colors.amber,
+    Colors.amberAccent,
   ];
   List<ColorSwatch<int>> correctColors = [
     Colors.green,
@@ -248,94 +248,88 @@ class _LevelScreenState extends State<LevelScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Level Screen'),
+        backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
       ),
-      body: Stack(
+      body: Column(
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                radius: 1,
-                colors: getBackgroundColor(),
+          SizedBox(height: deviceHeight * 0.01),
+          SizedBox(
+            width: deviceWidth - 40,
+            child: Text(
+              'Fai combaciare le linee e ripeti la seguente frase:',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: deviceWidth * 0.045),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: deviceWidth - 40,
+            child: Text(
+              sentence,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: deviceWidth * 0.045,
+                color: const Color.fromARGB(255, 255, 193, 7),
               ),
             ),
           ),
-          Positioned(
-            top: 40,
-            left: 20,
-            child: Text(
-              'Target tilt: ${(atan(targetY * 9.8) * (180 / pi)).round()} °',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-          Positioned(
-            top: 40,
-            left: 175,
-            child: Text(
-              'Angolazione attuale: ${(atan(yPosition * 9.8) * (180 / pi)).round()} °',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-          Positioned(
-            top: 60,
-            left: 20,
-            child: Text(
-              'Frase: $sentence',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-          Positioned(
-            top: 80,
-            left: 20,
-            child: Text(
-              'Frase: $speechResult',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-          Align(
-            alignment: Alignment(0, targetY),
-            child: const Divider(
-              color: Colors.white,
-              thickness: 10,
-              indent: 50,
-              endIndent: 50,
-            ),
-          ),
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 100),
-            alignment: Alignment(0, yPosition),
-            child: Container(
-              width: 180,
-              height: 10,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          if(showSuccess) ...[
-            const ColoredBox (
-              color: Color.fromRGBO(216, 240, 5, 0.63),
-              child: Center(
-                child: Text(
-                  'Frase corretta',     //TODO oppure un'icona che probabilmente è più carina
-                  style: TextStyle(fontSize: 32, color: Colors.white),
+          const SizedBox(height: 10),
+          Expanded(
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment(0, targetY),
+                  child: Container(
+                    width: 350,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 76, 175, 80),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
-          if(showError) ...[
-            const ColoredBox (
-              color: Color.fromRGBO(240, 5, 5, 0.631),
-              child: Center(
-                child: Text(
-                  'Frase sbagliata',     //TODO oppure un'icona che probabilmente è più carina
-                  style: TextStyle(fontSize: 32, color: Colors.white),
+                AnimatedAlign(
+                  duration: const Duration(milliseconds: 100),
+                  alignment: Alignment(0, yPosition),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 250,
+                    height: 11,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: getBackgroundColor(),
+                        radius: 40,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                 ),
-              ),
+                if(showSuccess) ...[
+                  const ColoredBox (
+                    color: Color.fromRGBO(216, 240, 5, 0.63),
+                    child: Center(
+                      child: Text(
+                        'Frase corretta',     //TODO oppure un'icona che probabilmente è più carina
+                        style: TextStyle(fontSize: 32, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+                if(showError) ...[
+                  const ColoredBox (
+                    color: Color.fromRGBO(240, 5, 5, 0.631),
+                    child: Center(
+                      child: Text(
+                        'Frase sbagliata',     //TODO oppure un'icona che probabilmente è più carina
+                        style: TextStyle(fontSize: 32, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
