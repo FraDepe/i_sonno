@@ -87,35 +87,35 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
             data: Theme.of(context).copyWith(
               timePickerTheme: TimePickerThemeData(
                 backgroundColor: const Color.fromARGB(255, 17, 17, 17),
-                dialHandColor: Colors.deepPurple,
+                dialHandColor: const Color.fromARGB(255, 0, 53, 102),
                 dialBackgroundColor: Colors.grey.shade900,
                 hourMinuteColor: WidgetStateColor.resolveWith((states) {
                   return states.contains(WidgetState.selected)
-                      ? Colors.deepPurple
+                      ? const Color.fromARGB(255, 0, 53, 102)
                       : Colors.grey.shade900;
                 }),
                 hourMinuteTextColor: WidgetStateColor.resolveWith((states) {
                   return states.contains(WidgetState.selected)
-                      ? Colors.white
+                      ? const Color.fromARGB(206, 255, 255, 255)
                       : Colors.white70;
                 }),
-                dayPeriodColor: Colors.deepPurple.withOpacity(0.5),
+                dayPeriodColor: const Color.fromARGB(160, 0, 53, 102),
                 dayPeriodTextColor: Colors.white,
                 dialTextColor: Colors.white,
-                entryModeIconColor: Colors.deepPurpleAccent,
+                entryModeIconColor: const Color.fromARGB(255, 0, 53, 102),
                 helpTextStyle: const TextStyle(
-                  color: Colors.white,
+                  color: Color.fromARGB(206, 255, 255, 255),
                   fontWeight: FontWeight.bold,
                 ),
                 inputDecorationTheme: const InputDecorationTheme(
                   filled: true,
                   fillColor: Color(0xFF121212),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.deepPurple),
+                    borderSide: BorderSide(color: Color.fromARGB(160, 0, 53, 102)),
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.deepPurpleAccent),
+                    borderSide: BorderSide(color: Color.fromARGB(160, 0, 53, 102)),
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
                   labelStyle: TextStyle(color: Colors.white),
@@ -161,7 +161,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
       assetAudioPath: assetAudio,
       volumeSettings: volumeSettings,
       androidStopAlarmOnTermination: false,
-      notificationSettings: NotificationSettings(
+      notificationSettings: const NotificationSettings(
         title: 'Sveglia',
         body: 'La sveglia sta suonando',
         icon: 'notification_icon',
@@ -316,7 +316,7 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                 nameOfTheDay,
                 textScaler: const TextScaler.linear(1.3),
                 style: const TextStyle(
-                  color: Color.fromARGB(255, 209, 182, 255),
+                  color: Color.fromARGB(255, 0, 86, 167),
                 ),
               ),
             ),
@@ -363,13 +363,13 @@ class _AddAlarmScreenState extends State<AddAlarmScreen> {
                       }),
                       thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
                         if (states.contains(WidgetState.selected)) {
-                          return Colors.green; // thumb when ON
+                          return const Color.fromARGB(255, 219, 166, 6); // thumb when ON
                         }
                         return const Color.fromARGB(255, 163, 163, 163);
                       }),
                       trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
                         if (states.contains(WidgetState.selected)) {
-                          return Colors.green; // outline when ON
+                          return const Color.fromARGB(255, 219, 166, 6); // outline when ON
                         }
                         return const Color.fromARGB(255, 163, 163, 163);
                       }),

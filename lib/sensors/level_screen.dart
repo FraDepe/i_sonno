@@ -270,7 +270,7 @@ class _LevelScreenState extends State<LevelScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: deviceWidth * 0.045,
-                color: const Color.fromARGB(255, 255, 193, 7),
+                color: const Color.fromARGB(255, 0, 75, 146),
               ),
             ),
           ),

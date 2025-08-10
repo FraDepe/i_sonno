@@ -19,54 +19,54 @@ Future<void> main() async {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
-        primaryColor: Colors.deepPurple,
+        scaffoldBackgroundColor: const Color.fromARGB(255, 10, 10, 10),
+        primaryColor: const Color.fromARGB(255, 0, 29, 61),
         colorScheme: const ColorScheme.dark(
-          primary: Colors.deepPurple,
-          secondary: Colors.purpleAccent,
-          surface: Colors.black,
-          onPrimary: Colors.white,
-          onSecondary: Colors.white,
+          primary: Color.fromARGB(255, 0, 61, 117),
+          secondary: Color.fromARGB(255, 0, 61, 117),
+          surface: Color.fromARGB(255, 0, 8, 20),
+          onPrimary: Color.fromARGB(206, 255, 255, 255),
+          onSecondary: Color.fromARGB(206, 255, 255, 255),
           onSurface: Color.fromARGB(255, 230, 230, 230),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Color.fromARGB(255, 133, 86, 216),
-          foregroundColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 0, 29, 61),
+          foregroundColor: Color.fromARGB(206, 255, 255, 255),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
+            backgroundColor: const Color.fromARGB(255, 0, 29, 61),
+            foregroundColor: const Color.fromARGB(206, 255, 255, 255),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25),
             ),
           ),
         ),
         cardTheme: const CardTheme(
-          color: Colors.deepPurple,
+          color: Color.fromARGB(255, 0, 45, 87),
         ),
         textTheme: const TextTheme(
-          titleLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
+          titleLarge: TextStyle(color: Color.fromARGB(206, 255, 255, 255)),
+          bodyMedium: TextStyle(color: Color.fromARGB(206, 255, 255, 255)),
         ),
         switchTheme: SwitchThemeData(
           thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
             if (states.contains(WidgetState.selected)) {
               return Colors.green; // thumb when ON
             }
-            return Colors.black; // thumb when OFF
+            return const Color.fromARGB(255, 0, 8, 20); // thumb when OFF
           }),
           trackColor: WidgetStateProperty.resolveWith<Color>((states) {
             if (states.contains(WidgetState.selected)) {
-              return Colors.deepPurple; // track when ON
+              return const Color.fromARGB(255, 0, 53, 102); // track when ON
             }
-            return Colors.deepPurple; // track when OFF
+            return const Color.fromARGB(255, 0, 53, 102); // track when OFF
           }),
           trackOutlineColor: WidgetStateProperty.resolveWith<Color>((states) {
             if (states.contains(WidgetState.selected)) {
               return Colors.green; // outline when ON
             }
-            return Colors.black; // outline when OFF
+            return const Color.fromARGB(255, 0, 8, 20); // outline when OFF
           }),
         ),
       ),

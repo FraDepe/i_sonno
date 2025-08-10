@@ -128,7 +128,7 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'Sveglie',
-          style: TextStyle(color: Colors.white),),
+          style: TextStyle(color: Color.fromARGB(206, 255, 255, 255)),),
       ),
       body:  Column(
         children: [
