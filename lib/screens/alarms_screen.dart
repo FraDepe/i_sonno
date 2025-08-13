@@ -158,6 +158,14 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
               child: const Text('Finger'),
             ),
           ),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                await Alarm.stopAll();
+              },
+              child: const Text('Reset'),
+            ),
+          ),
           Expanded(
             child: Stack(
               children: [

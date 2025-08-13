@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
+import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 
 class FingerCounterScreen extends StatefulWidget {
   const FingerCounterScreen({required this.alarmId, super.key});
@@ -19,16 +21,18 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
   final ValueNotifier<int> actualFingers = ValueNotifier(0);
   late VoidCallback actualFingersListener;
 
-  int secondsRemaining = 6;
+  int secondsRemaining = 0;
   Timer? countdownTimer;
 
   bool countdownStarted = false;
+  bool navigated = false;
 
   @override
   void initState() {
     super.initState();
 
-    targetFingers = Random().nextInt(5)+1;
+    targetFingers = Random().nextInt(5) + 1;
+    secondsRemaining = Random().nextInt(5) + 6; //fixme non capisco se funziona?
 
     actualFingersListener = () {
       if(actualFingers.value == targetFingers) {
@@ -36,27 +40,43 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
         setState(() {
           countdownStarted = true;
         });
+
+        countdownTimer?.cancel();
         countdownTimer = Timer.periodic(
           const Duration(seconds: 1),
-          (timer) {
+          (_) async {
             if(secondsRemaining > 1) {
               setState(() {
                 secondsRemaining--;
               });
             } else {
+              debugPrint('prima');
+              countdownTimer?.cancel();
+              debugPrint('dopo');
+
               setState(() {
-                secondsRemaining--;
+                secondsRemaining = 0;
                 countdownStarted = false;
               });
-              timer.cancel();
+              
+              if (!navigated && mounted) {
+                navigated = true;
+                
+                await Alarm.stop(widget.alarmId);
 
-              //await Alarm.stop(widget.alarmId);
-              //if (mounted) {
-              //  await Navigator.of(context).push(MaterialPageRoute(
-              //    builder: (_) => PedometerApp(alarmId: widget.alarmId),
-              //    settings: const RouteSettings(name: '/testPedometer'),
-              //  ),);
-              //}
+                debugPrint(mounted.toString());
+
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  if (mounted) {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => PedometerApp(alarmId: widget.alarmId),
+                        settings: const RouteSettings(name: '/testPedometer'),
+                      ),
+                    );
+                  }
+                });
+              }
             }
           }
         );

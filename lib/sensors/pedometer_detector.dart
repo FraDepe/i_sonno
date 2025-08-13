@@ -138,7 +138,7 @@ class _PedometerAppState extends State<PedometerApp> {
       .map((a) => pow(a - mean, 2))
       .reduce((a, b) => a + b) / accBuffer.length;
   final stDev = sqrt(variance);
-  debugPrint(stDev.toString());
+  //debugPrint(stDev.toString());
   return /*stDev > 1.3 &&*/ stDev < 4;
 }
 

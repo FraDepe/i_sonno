@@ -24,7 +24,7 @@ Future<void> main() async {
         colorScheme: const ColorScheme.dark(
           primary: Color.fromARGB(255, 0, 61, 117),
           secondary: Color.fromARGB(255, 0, 61, 117),
-          surface: Color.fromARGB(255, 0, 8, 20),
+          surface: Color.fromARGB(255, 0, 61, 117),
           onPrimary: Color.fromARGB(206, 255, 255, 255),
           onSecondary: Color.fromARGB(206, 255, 255, 255),
           onSurface: Color.fromARGB(255, 230, 230, 230),

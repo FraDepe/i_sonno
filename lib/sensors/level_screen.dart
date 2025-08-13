@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
@@ -162,23 +163,29 @@ class _LevelScreenState extends State<LevelScreen> {
           showSuccess = true;
         });
 
+        debugPrint('Lazio Merda');
+
         await Future.delayed(const Duration(seconds: 2));
 
         debugPrint('Forza Roma');
-        Navigator.popUntil(context, (route) => route.settings.name == '/');
+        //Navigator.popUntil(context, (route) => route.settings.name == '/');
 
         //^^^^^^^^^^^^^^^^^^^^^^^^^
         //TODO swap
         //vvvvvvvvvvvvvvvvvvvvvvvvv
 
+        //isCorrectLevel.removeListener(isCorrectLevelListener);
+        await _accSub?.cancel();
+        _levelHoldTimer?.cancel();
 
-        //await Alarm.stop(widget.alarmId);
-        //if (mounted) {
-        //  await Navigator.of(context).push(MaterialPageRoute(
-        //    builder: (_) => PedometerApp(alarmId: widget.alarmId),
-        //    settings: const RouteSettings(name: '/testPedometer'),
-        //  ),);
-        //}
+        await Alarm.stop(widget.alarmId);
+        debugPrint(mounted.toString());
+        if (mounted) {
+          await Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => PedometerApp(alarmId: widget.alarmId),
+            settings: const RouteSettings(name: '/testPedometer'),
+          ),);
+        }
 
       } else {
         

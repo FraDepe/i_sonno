@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:alarm/alarm.dart';
 import 'package:alarm/utils/alarm_set.dart';
 import 'package:flutter/material.dart';
+import 'package:i_Sonno_Beta/sensors/finger_counter_screen.dart';
+import 'package:i_Sonno_Beta/sensors/level_screen.dart';
 import 'package:i_Sonno_Beta/sensors/shake_detector.dart';
 import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:logging/logging.dart';
@@ -43,25 +45,29 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   }
 
   Future<void> _stopAlarm() async {
-    switch (Random().nextInt(3)) {
+    //switch (Random().nextInt(3)) {
+    switch (2) {
       case 0:
+        debugPrint('Shake');
         await Navigator.of(context).push(MaterialPageRoute(
           builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
-          settings: const RouteSettings(name: '/playingAlarm/firstTask'),
+          settings: const RouteSettings(name: '/playingAlarm/shakeTask'),
         ),);
-        //break TODO capire se serve
+        break;
       case 1:
+        debugPrint('Livella');
         await Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
-          settings: const RouteSettings(name: '/playingAlarm/firstTask'),
+          builder: (_) =>  LevelScreen(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/levelTask'),
         ),);
-        //break TODO capire se serve
+        break;
       case 2:
+        debugPrint('Dita');
         await Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
-          settings: const RouteSettings(name: '/playingAlarm/firstTask'),
+          builder: (_) =>  FingerCounterScreen(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/fingerTask'),
         ),);
-        //break TODO capire se serve
+        break;
     }    
   }
 
