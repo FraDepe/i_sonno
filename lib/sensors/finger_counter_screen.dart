@@ -50,9 +50,7 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
                 secondsRemaining--;
               });
             } else {
-              debugPrint('prima');
               countdownTimer?.cancel();
-              debugPrint('dopo');
 
               setState(() {
                 secondsRemaining = 0;
@@ -63,8 +61,6 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
                 navigated = true;
                 
                 await Alarm.stop(widget.alarmId);
-
-                debugPrint(mounted.toString());
 
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
                   if (mounted) {

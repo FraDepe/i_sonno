@@ -9,6 +9,7 @@ import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 class LevelScreen extends StatefulWidget {
   const LevelScreen({required this.alarmId, super.key});
@@ -20,6 +21,12 @@ class LevelScreen extends StatefulWidget {
 }
 
 class _LevelScreenState extends State<LevelScreen> {
+  late final VolumeController _volumeController;
+  late final StreamSubscription<double> _subscription;
+  double _currentVolume = 0;
+  double _volumeValue = 0;
+  bool _isMuted = false;
+
   StreamSubscription? _accSub;
   
   final Queue<double> _yValues = Queue<double>();
@@ -54,10 +61,13 @@ class _LevelScreenState extends State<LevelScreen> {
     Colors.greenAccent,
   ];
 
+  bool _handledSpeech = false; // Nuova variabile di stato
+
   @override
   void initState() {
     super.initState();
 
+    initVolumeController();
     pickupSentence();
     generateRandomTargetTilt();
     _initSpeech();
@@ -142,50 +152,70 @@ class _LevelScreenState extends State<LevelScreen> {
   }
 
   Future<void> _startListening() async {
+    _handledSpeech = false; // reset ogni volta che inizi ad ascoltare
+    _currentVolume = await _volumeController.getVolume();
+    if (_volumeValue > 0.2) {
+      await _volumeController.setVolume(_currentVolume * 0.2);
+    } else {
+      _currentVolume = 0.7;
+    }
+    sentenceCaptured = false;
+
     await speechToText.listen(
       onResult: _onSpeechResult,
       listenFor: const Duration(seconds: 4),
+      partialResults: false,
+      cancelOnError: true,
     );
+
+    speechToText.statusListener = (status) {
+      if (_handledSpeech) return; // 3. Controlla subito
+      debugPrint('Speech status: $status');
+      if (status == 'done' && !sentenceCaptured && speechResult == '') {
+        _handledSpeech = true; // Aggiorna subito!
+        _handleNoSpeech();
+      }
+    };
   }
 
   Future<void> _onSpeechResult(SpeechRecognitionResult result) async {
+    if (_handledSpeech) return; // 3. Controlla subito
+    _handledSpeech = true;      // Aggiorna subito!
+
     final preSpeechResult = result.recognizedWords;
-  
+    debugPrint('QUI' + result.toString());
+
     setState(() {
       speechResult = preSpeechResult;
     });
 
-    sentenceCaptured = true;
+    if (result.recognizedWords.isNotEmpty) {
+      sentenceCaptured = true;
+    }
 
     if(!speechToText.isListening) {
-      if(isCorrectSentence()) {
+      if(result != null && isCorrectSentence()) {
         setState(() {
           showSuccess = true;
         });
 
-        debugPrint('Lazio Merda');
-
         await Future.delayed(const Duration(seconds: 2));
 
-        debugPrint('Forza Roma');
-        //Navigator.popUntil(context, (route) => route.settings.name == '/');
-
-        //^^^^^^^^^^^^^^^^^^^^^^^^^
-        //TODO swap
-        //vvvvvvvvvvvvvvvvvvvvvvvvv
-
-        //isCorrectLevel.removeListener(isCorrectLevelListener);
         await _accSub?.cancel();
         _levelHoldTimer?.cancel();
 
         await Alarm.stop(widget.alarmId);
-        debugPrint(mounted.toString());
-        if (mounted) {
-          await Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => PedometerApp(alarmId: widget.alarmId),
-            settings: const RouteSettings(name: '/testPedometer'),
-          ),);
-        }
+
+        await _volumeController.setVolume(_currentVolume);
+
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (mounted) {
+            await Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => PedometerApp(alarmId: widget.alarmId),
+              settings: const RouteSettings(name: '/testPedometer'),
+            ),);
+          }
+        });
 
       } else {
         
@@ -194,6 +224,8 @@ class _LevelScreenState extends State<LevelScreen> {
         });
 
         await Future.delayed(const Duration(seconds: 2));
+
+        await _volumeController.setVolume(_currentVolume);
 
         setState(() {
           showError = false;
@@ -205,18 +237,41 @@ class _LevelScreenState extends State<LevelScreen> {
         sentenceCaptured = false;
       }
     }
+
+    if(sentenceCaptured && speechResult == '') {
+      await _volumeController.setVolume(_currentVolume);
+    }
+  }
+  
+  Future<void> _handleNoSpeech() async {
+    setState(() {
+      showError = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    await _volumeController.setVolume(_currentVolume);
+
+    setState(() {
+      showError = false;
+    });
+
+    generateRandomTargetTilt();
+    await pickupSentence();
+    alreadyStarted = false;
+    sentenceCaptured = false;
   }
 
   bool isCorrectSentence() {
     return sentence.toLowerCase() == speechResult.toLowerCase();
   }
 
-  void generateRandomTargetTilt() {
+  void generateRandomTargetTilt() { //FIXME fare in modo che non capitino situazioni in cui non devo inclinare il telefono
     final random = Random();
     targetY = (random.nextDouble() * 1.6) - 0.8; // -0.8 to +0.8
   }
 
-  Future<void> pickupSentence() async{
+  Future<void> pickupSentence() async {
     final response = await rootBundle.loadString('assets/sentences.json');
     final cleaned = response.trim().replaceAll('{', '').replaceAll('}', '').replaceAll('\n', '');
     final entries = cleaned.split(',');
@@ -239,12 +294,25 @@ class _LevelScreenState extends State<LevelScreen> {
     return isCorrectLevel.value ? correctColors : badColors;
   }
 
+  void initVolumeController() {
+    _volumeController = VolumeController.instance;
+    _volumeController.showSystemUI = false;
+    _subscription = _volumeController.addListener((volume) {
+      _volumeValue = volume;
+    });
+
+    _volumeController.isMuted().then((isMuted) {
+      _isMuted = isMuted;
+    });
+  }
+
   @override
   void dispose() {
     debugPrint('------------------------- Dispose ---------------------------');
     isCorrectLevel.removeListener(isCorrectLevelListener);
     _accSub?.cancel();
     _levelHoldTimer?.cancel();
+    _subscription.cancel();
     super.dispose();
   }
 

@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:i_Sonno_Beta/sensors/finger_counter_screen.dart';
 import 'package:i_Sonno_Beta/sensors/level_screen.dart';
 import 'package:i_Sonno_Beta/sensors/shake_detector.dart';
+import 'package:i_Sonno_Beta/sensors/sort_number_screen.dart';
 import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:logging/logging.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 class PlayingAlarmScreen extends StatefulWidget {
   const PlayingAlarmScreen({required this.alarmId, super.key});
@@ -21,12 +23,21 @@ class PlayingAlarmScreen extends StatefulWidget {
 
 class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   static final _log = Logger('PlayingAlarmScreen');
+
+  late final VolumeController _volumeController;
+  late final StreamSubscription<double> _subscription;
+  double _currentVolume = 0;
+  double _volumeValue = 0;
+  bool _isMuted = false;
   
   StreamSubscription<AlarmSet>? _ringingSubscription;
 
   @override
   void initState() {
     super.initState();
+    
+    initVolumeController();
+
     _ringingSubscription = Alarm.ringing.listen((alarms) {
       final currentRoute = ModalRoute.of(context)?.settings.name;
       debugPrint(currentRoute);
@@ -37,16 +48,35 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
     });
   }
 
+  Future<void> initVolumeController() async {
+    _volumeController = VolumeController.instance;
+    _volumeController.showSystemUI = false;
+    _subscription = _volumeController.addListener((volume) {
+      _volumeValue = volume;
+    });
+
+    await _volumeController.isMuted().then((isMuted) {
+      _isMuted = isMuted;
+    });
+
+    _currentVolume = await _volumeController.getVolume();
+
+    if(_currentVolume < 0.4 || _isMuted) {
+      await _volumeController.setVolume(0.75);
+    }
+  }
+
   @override
   void dispose() {
     AlarmState.isAlarmActive = false;
     _ringingSubscription?.cancel();
+    _subscription.cancel();
     super.dispose();
   }
 
   Future<void> _stopAlarm() async {
     //switch (Random().nextInt(3)) {
-    switch (2) {
+    switch (1) {
       case 0:
         debugPrint('Shake');
         await Navigator.of(context).push(MaterialPageRoute(
@@ -66,6 +96,13 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
         await Navigator.of(context).push(MaterialPageRoute(
           builder: (_) =>  FingerCounterScreen(alarmId: widget.alarmId,),
           settings: const RouteSettings(name: '/playingAlarm/fingerTask'),
+        ),);
+        break;
+      case 3:
+        debugPrint('Ordina');
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) =>  SortNumberScreen(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/sortTask'),
         ),);
         break;
     }    
