@@ -48,6 +48,7 @@ class _LevelScreenState extends State<LevelScreen> {
   bool alreadyStarted = false;
 
   Timer? _levelHoldTimer;
+  Timer? _restoreVolumeTimer;
 
   bool showSuccess = false;
   bool showError = false;
@@ -61,7 +62,7 @@ class _LevelScreenState extends State<LevelScreen> {
     Colors.greenAccent,
   ];
 
-  bool _handledSpeech = false; // Nuova variabile di stato
+  bool _handledSpeech = false;
 
   @override
   void initState() {
@@ -92,8 +93,6 @@ class _LevelScreenState extends State<LevelScreen> {
         _levelHoldTimer = null;
       }
     };
-
-    //TODO  Gestire schermata tra il momendo in cui la frase viene controllata e il passaggio alla schermata successiva
 
     _accSub = accelerometerEventStream().listen((event) {
       final normalizedY = scaleY(event.y);
@@ -152,7 +151,6 @@ class _LevelScreenState extends State<LevelScreen> {
   }
 
   Future<void> _startListening() async {
-    _handledSpeech = false; // reset ogni volta che inizi ad ascoltare
     _currentVolume = await _volumeController.getVolume();
     if (_volumeValue > 0.2) {
       await _volumeController.setVolume(_currentVolume * 0.2);
@@ -160,113 +158,86 @@ class _LevelScreenState extends State<LevelScreen> {
       _currentVolume = 0.7;
     }
     sentenceCaptured = false;
+    speechResult = '';
+
+    _restoreVolumeTimer?.cancel();
+    _restoreVolumeTimer = Timer(const Duration(seconds: 8), () async {
+      final current = await _volumeController.getVolume();
+      if (current < 0.35) {
+        await _volumeController.setVolume(_currentVolume);
+      }
+    });
 
     await speechToText.listen(
       onResult: _onSpeechResult,
       listenFor: const Duration(seconds: 4),
-      partialResults: false,
-      cancelOnError: true,
+      listenOptions: SpeechListenOptions(
+        partialResults: false,
+      )
     );
 
-    speechToText.statusListener = (status) {
-      if (_handledSpeech) return; // 3. Controlla subito
-      debugPrint('Speech status: $status');
-      if (status == 'done' && !sentenceCaptured && speechResult == '') {
-        _handledSpeech = true; // Aggiorna subito!
-        _handleNoSpeech();
-      }
-    };
   }
 
   Future<void> _onSpeechResult(SpeechRecognitionResult result) async {
-    if (_handledSpeech) return; // 3. Controlla subito
-    _handledSpeech = true;      // Aggiorna subito!
-
     final preSpeechResult = result.recognizedWords;
-    debugPrint('QUI' + result.toString());
 
-    setState(() {
-      speechResult = preSpeechResult;
-    });
+    speechResult = preSpeechResult;
 
-    if (result.recognizedWords.isNotEmpty) {
+    if (preSpeechResult.isNotEmpty) {
       sentenceCaptured = true;
     }
+    
+    _restoreVolumeTimer?.cancel();
 
-    if(!speechToText.isListening) {
-      if(result != null && isCorrectSentence()) {
-        setState(() {
-          showSuccess = true;
-        });
+    if(isCorrectSentence()) {
+      setState(() {
+        showSuccess = true;
+      });
 
-        await Future.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 2));
 
-        await _accSub?.cancel();
-        _levelHoldTimer?.cancel();
+      await _accSub?.cancel();
+      _levelHoldTimer?.cancel();
 
-        await Alarm.stop(widget.alarmId);
+      await Alarm.stop(widget.alarmId);
 
-        await _volumeController.setVolume(_currentVolume);
-
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          if (mounted) {
-            await Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => PedometerApp(alarmId: widget.alarmId),
-              settings: const RouteSettings(name: '/testPedometer'),
-            ),);
-          }
-        });
-
-      } else {
-        
-        setState(() {
-          showError = true;
-        });
-
-        await Future.delayed(const Duration(seconds: 2));
-
-        await _volumeController.setVolume(_currentVolume);
-
-        setState(() {
-          showError = false;
-        });
-
-        generateRandomTargetTilt();
-        await pickupSentence();
-        alreadyStarted = false;
-        sentenceCaptured = false;
-      }
-    }
-
-    if(sentenceCaptured && speechResult == '') {
       await _volumeController.setVolume(_currentVolume);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) {
+          await Navigator.of(context).push(MaterialPageRoute<void>(
+            builder: (_) => PedometerApp(alarmId: widget.alarmId),
+            settings: const RouteSettings(name: '/testPedometer'),
+          ),);
+        }
+      });
+
+    } else {
+      
+      setState(() {
+        showError = true;
+      });
+
+      await Future<void>.delayed(const Duration(seconds: 2));
+
+      await _volumeController.setVolume(_currentVolume);
+
+      setState(() {
+        showError = false;
+      });
+
+      generateRandomTargetTilt();
+      await pickupSentence();
+      alreadyStarted = false;
+      sentenceCaptured = false;
     }
-  }
-  
-  Future<void> _handleNoSpeech() async {
-    setState(() {
-      showError = true;
-    });
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    await _volumeController.setVolume(_currentVolume);
-
-    setState(() {
-      showError = false;
-    });
-
-    generateRandomTargetTilt();
-    await pickupSentence();
-    alreadyStarted = false;
-    sentenceCaptured = false;
   }
 
   bool isCorrectSentence() {
     return sentence.toLowerCase() == speechResult.toLowerCase();
   }
 
-  void generateRandomTargetTilt() { //FIXME fare in modo che non capitino situazioni in cui non devo inclinare il telefono
+  void generateRandomTargetTilt() {
     final random = Random();
     targetY = (random.nextDouble() * 1.6) - 0.8; // -0.8 to +0.8
   }
@@ -313,6 +284,7 @@ class _LevelScreenState extends State<LevelScreen> {
     _accSub?.cancel();
     _levelHoldTimer?.cancel();
     _subscription.cancel();
+    _restoreVolumeTimer?.cancel();
     super.dispose();
   }
 
@@ -381,23 +353,25 @@ class _LevelScreenState extends State<LevelScreen> {
                   ),
                 ),
                 if(showSuccess) ...[
-                  const ColoredBox (
-                    color: Color.fromRGBO(216, 240, 5, 0.63),
+                  ColoredBox (
+                    color: const Color.fromRGBO(255, 255, 255, 0),
                     child: Center(
-                      child: Text(
-                        'Frase corretta',     //TODO oppure un'icona che probabilmente è più carina
-                        style: TextStyle(fontSize: 32, color: Colors.white),
+                      child: Icon(
+                        Icons.check,
+                        color: Colors.green,
+                        size: deviceWidth * 0.5,
                       ),
                     ),
                   ),
                 ],
                 if(showError) ...[
-                  const ColoredBox (
-                    color: Color.fromRGBO(240, 5, 5, 0.631),
+                  ColoredBox (
+                    color: const Color.fromRGBO(255, 255, 255, 0),
                     child: Center(
-                      child: Text(
-                        'Frase sbagliata',     //TODO oppure un'icona che probabilmente è più carina
-                        style: TextStyle(fontSize: 32, color: Colors.white),
+                      child: Icon(
+                        Icons.close,
+                        color: Colors.red,
+                        size: deviceWidth * 0.5,
                       ),
                     ),
                   ),

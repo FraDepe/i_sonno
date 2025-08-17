@@ -5,9 +5,6 @@ import 'package:alarm/utils/alarm_set.dart';
 import 'package:flutter/material.dart';
 import 'package:i_Sonno_Beta/screens/add_alarm_screen.dart';
 import 'package:i_Sonno_Beta/screens/playing_alarm.dart';
-import 'package:i_Sonno_Beta/sensors/finger_counter_screen.dart';
-import 'package:i_Sonno_Beta/sensors/level_screen.dart';
-import 'package:i_Sonno_Beta/sensors/sort_number_screen.dart';
 import 'package:i_Sonno_Beta/services/alarm_state.dart';
 import 'package:i_Sonno_Beta/services/notifications.dart';
 import 'package:i_Sonno_Beta/services/permission.dart';
@@ -133,53 +130,6 @@ class _AlarmsScreenState extends State<AlarmsScreen> {
       ),
       body:  Column(
         children: [
-          Center(
-            child: ElevatedButton(
-              onPressed: () async {
-                await Navigator.push(
-                  context, MaterialPageRoute(
-                    builder: (context) => const LevelScreen(alarmId: 0,),
-                    settings: const RouteSettings(name: '/testLevel'),
-                  ),
-                );
-              },
-              child: const Text('Level'),
-            ),
-          ),
-          Center(
-            child: ElevatedButton(
-              onPressed: () async {
-                await Navigator.push(
-                  context, MaterialPageRoute(
-                    builder: (context) => const SortNumberScreen(alarmId: 0,),
-                    settings: const RouteSettings(name: '/testSort'),
-                  ),
-                );
-              },
-              child: const Text('Sort'),
-            ),
-          ),
-          Center(
-            child: ElevatedButton(
-              onPressed: () async {
-                await Navigator.push(
-                  context, MaterialPageRoute(
-                    builder: (context) => const FingerCounterScreen(alarmId: 0,),
-                    settings: const RouteSettings(name: '/testFinger'),
-                  ),
-                );
-              },
-              child: const Text('Finger'),
-            ),
-          ),
-          Center(
-            child: ElevatedButton(
-              onPressed: () async {
-                await Alarm.stopAll();
-              },
-              child: const Text('Reset'),
-            ),
-          ),
           Expanded(
             child: Stack(
               children: [

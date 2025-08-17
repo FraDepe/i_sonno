@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:i_Sonno_Beta/sensors/pedometer_detector.dart';
 import 'package:sensors_plus/sensors_plus.dart' as sensors;
 import 'package:sensors_plus/sensors_plus.dart';
@@ -47,7 +46,6 @@ class _SensorAppState extends State<SensorApp> {
   final double scaleFactor = 60;
   String task_completed = '';
   int _axis = 0;
-  String _axis_text = '';
   bool isNavigating = false;
 
   static final ValueNotifier<double> _progress = ValueNotifier(0);
@@ -59,12 +57,11 @@ class _SensorAppState extends State<SensorApp> {
     _axis = Random().nextInt(3);
     
     imageIcon = (_axis==0)
-      ? 'assets/icons/icon1.svg'
+      ? 'assets/icons/xAxis.png'
       : (_axis==1) 
-        ? 'assets/icons/icon3.svg'
-        : 'assets/icons/icon2.svg';
+        ? 'assets/icons/yAxis.png'
+        : 'assets/icons/zAxis.png';
 
-    _axis_text = (_axis==0)?'x':(_axis==1)?'y':'z';
     _progress.value = 0.0;
     _gyroSub = gyroscopeEventStream().listen((GyroscopeEvent event) async {
 
@@ -112,7 +109,7 @@ class _SensorAppState extends State<SensorApp> {
         await _gyroSub.cancel();
         
         if (mounted) {
-          await Navigator.of(context).push(MaterialPageRoute(
+          await Navigator.of(context).push(MaterialPageRoute<void>(
             builder: (_) => PedometerApp(alarmId: widget.alarmId),
             settings: const RouteSettings(name: '/testPedometer'),
           ),);
@@ -208,13 +205,13 @@ class _SensorAppState extends State<SensorApp> {
                         fontSize: deviceWidth * 0.045,
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    //const SizedBox(height: 10),
                     Center(
                       child:
-                        SvgPicture.asset(
+                        Image.asset(
                           imageIcon,
-                          height: deviceHeight * 0.3,
-                          width: deviceWidth * 0.3,
+                          height: deviceHeight * 0.55,
+                          width: deviceWidth * 0.65,
                         ),
                     ),
                   ],

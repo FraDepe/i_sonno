@@ -76,31 +76,31 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
 
   Future<void> _stopAlarm() async {
     //switch (Random().nextInt(3)) {
-    switch (1) {
+    switch(3) {
       case 0:
         debugPrint('Shake');
-        await Navigator.of(context).push(MaterialPageRoute(
+        await Navigator.of(context).push(MaterialPageRoute<void>(
           builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
           settings: const RouteSettings(name: '/playingAlarm/shakeTask'),
         ),);
         break;
       case 1:
         debugPrint('Livella');
-        await Navigator.of(context).push(MaterialPageRoute(
+        await Navigator.of(context).push(MaterialPageRoute<void>(
           builder: (_) =>  LevelScreen(alarmId: widget.alarmId,),
           settings: const RouteSettings(name: '/playingAlarm/levelTask'),
         ),);
         break;
       case 2:
         debugPrint('Dita');
-        await Navigator.of(context).push(MaterialPageRoute(
+        await Navigator.of(context).push(MaterialPageRoute<void>(
           builder: (_) =>  FingerCounterScreen(alarmId: widget.alarmId,),
           settings: const RouteSettings(name: '/playingAlarm/fingerTask'),
         ),);
         break;
       case 3:
         debugPrint('Ordina');
-        await Navigator.of(context).push(MaterialPageRoute(
+        await Navigator.of(context).push(MaterialPageRoute<void>(
           builder: (_) =>  SortNumberScreen(alarmId: widget.alarmId,),
           settings: const RouteSettings(name: '/playingAlarm/sortTask'),
         ),);
@@ -121,7 +121,7 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
               width: deviceWidth * 0.7,
               height: deviceHeight * 0.20,
               child: Text(
-                '${TimeOfDay.now().hour.toString().padLeft(2, '0')}:${(TimeOfDay.now().minute).toString().padLeft(2, '0')}',
+                '${TimeOfDay.now().hour.toString().padLeft(2, '0')}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
                 style: TextStyle(fontSize: deviceWidth * 0.1),
                 textScaler: const TextScaler.linear(2.5),
                 textAlign: TextAlign.center,

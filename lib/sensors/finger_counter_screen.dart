@@ -32,11 +32,10 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
     super.initState();
 
     targetFingers = Random().nextInt(5) + 1;
-    secondsRemaining = Random().nextInt(5) + 6; //fixme non capisco se funziona?
+    secondsRemaining = Random().nextInt(5) + 6;
 
     actualFingersListener = () {
       if(actualFingers.value == targetFingers) {
-        secondsRemaining = 5;
         setState(() {
           countdownStarted = true;
         });

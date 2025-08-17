@@ -34,6 +34,8 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
   double _volumeValue = 0;
   bool _isMuted = false;
 
+  Timer? _restoreVolumeTimer;
+
   bool showSuccess = false;
   bool showError = false;
   
@@ -80,21 +82,33 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
     final currentSentence = '${numberNames[firstNumber]} ${numberNames[secondNumber]} ${numberNames[thirdNumber]} ${numberNames[fourthNumber]}';
     final currentSentenceAlternative = '$firstNumber$secondNumber$thirdNumber$fourthNumber';
   
-    return speechResult == currentSentence || speechResult == currentSentenceAlternative;
+    return speechResult == currentSentence || speechResult.replaceAll(' ', '') == currentSentenceAlternative;
   }
 
   Future<void> _startListening() async {
     _currentVolume = await _volumeController.getVolume();
-    
     if (_volumeValue > 0.2) {
       await _volumeController.setVolume(_currentVolume * 0.2);
     } else {
       _currentVolume = 0.7;
     }
+    sentenceCaptured = false;
+    speechResult = '';
+
+    _restoreVolumeTimer?.cancel();
+    _restoreVolumeTimer = Timer(const Duration(seconds: 8), () async {
+      final current = await _volumeController.getVolume();
+      if (current < 0.35) {
+        await _volumeController.setVolume(_currentVolume);
+      }
+    });
 
     await speechToText.listen(
       onResult: _onSpeechResult,
       listenFor: const Duration(seconds: 5),
+      listenOptions: SpeechListenOptions(
+        partialResults: false,
+      ),
     );
   }
 
@@ -103,48 +117,48 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
 
     speechResult = preSpeechResult;
 
-    sentenceCaptured = true;
+    if (preSpeechResult.isNotEmpty) {
+      sentenceCaptured = true;
+    }
 
-    debugPrint(speechResult);
+    _restoreVolumeTimer?.cancel();
 
-    if(!speechToText.isListening) {
-      if(isCorrectSentence()) {
-        setState(() {
-          showSuccess = true;
-        });
+    if(isCorrectSentence()) {
+      setState(() {
+        showSuccess = true;
+      });
 
-        await Future.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 2));
 
-        await Alarm.stop(widget.alarmId);
+      await Alarm.stop(widget.alarmId);
 
-        await _volumeController.setVolume(_currentVolume);
+      await _volumeController.setVolume(_currentVolume);
 
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          if (mounted) {
-            await Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => PedometerApp(alarmId: widget.alarmId),
-              settings: const RouteSettings(name: '/testPedometer'),
-            ),);
-          }
-        });
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) {
+          await Navigator.of(context).push(MaterialPageRoute<void>(
+            builder: (_) => PedometerApp(alarmId: widget.alarmId),
+            settings: const RouteSettings(name: '/testPedometer'),
+          ),);
+        }
+      });
 
-      } else {
-        
-        setState(() {
-          showError = true;
-        });
+    } else {
+      
+      setState(() {
+        showError = true;
+      });
 
-        await Future.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 2));
 
-        await _volumeController.setVolume(_currentVolume);
+      await _volumeController.setVolume(_currentVolume);
 
-        setState(() {
-          showError = false;
-        });
+      setState(() {
+        showError = false;
+      });
 
-        pickRandomNumber();
-        sentenceCaptured = false;
-      }
+      pickRandomNumber();
+      sentenceCaptured = false;
     }
   }
 
@@ -164,6 +178,7 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
   void dispose() {
     debugPrint('------------------------- Dispose ---------------------------');
     _subscription.cancel();
+    _restoreVolumeTimer?.cancel();
     super.dispose();
   }
 
@@ -179,35 +194,63 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _startListening,
-        child: Column(
+        child: Stack(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text(
-                'Tocca lo schermo e ripeti in ordine',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
+            Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    'Tocca lo schermo e ripeti in ordine',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      _buildQuadrant(1, firstNumber, deviceWidth),
+                      _buildQuadrant(2, secondNumber, deviceWidth),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      _buildQuadrant(3, thirdNumber, deviceWidth),
+                      _buildQuadrant(4, fourthNumber, deviceWidth),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: Row(
-                children: [
-                  _buildQuadrant(1, firstNumber, deviceWidth),
-                  _buildQuadrant(2, secondNumber, deviceWidth),
-                ],
+            if(showSuccess) ...[
+              ColoredBox (
+                color: const Color.fromRGBO(255, 255, 255, 0),
+                child: Center(
+                  child: Icon(
+                    Icons.check,
+                    color: Colors.green,
+                    size: deviceWidth * 0.5,
+                  ),
+                ),
               ),
-            ),
-            Expanded(
-              child: Row(
-                children: [
-                  _buildQuadrant(3, thirdNumber, deviceWidth),
-                  _buildQuadrant(4, fourthNumber, deviceWidth),
-                ],
+            ],
+            if(showError) ...[
+              ColoredBox (
+                color: const Color.fromRGBO(255, 255, 255, 0),
+                child: Center(
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.red,
+                    size: deviceWidth * 0.5,
+                  ),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
