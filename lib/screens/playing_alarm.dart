@@ -75,8 +75,8 @@ class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
   }
 
   Future<void> _stopAlarm() async {
-    //switch (Random().nextInt(3)) {
-    switch(3) {
+    switch (Random().nextInt(3)) {
+    //switch(3) {
       case 0:
         debugPrint('Shake');
         await Navigator.of(context).push(MaterialPageRoute<void>(

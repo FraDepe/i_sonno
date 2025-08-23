@@ -149,7 +149,7 @@ class _PedometerAppState extends State<PedometerApp> {
         if (mounted) {
           setState(() {
             isWalking = true;
-            _progress.value += 1/4;
+            _progress.value += 1/40;
           });
         }
 

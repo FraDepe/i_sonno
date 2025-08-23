@@ -77,6 +77,10 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
         );
       } else {
         setState(() {
+            if (countdownStarted) {
+              targetFingers = Random().nextInt(5) + 1;
+              secondsRemaining += Random().nextInt(5) + 1; 
+            }
           countdownStarted = false;
         });
         countdownTimer?.cancel();
@@ -151,9 +155,7 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
               ),
             ),
             if (countdownStarted) ...[
-              Positioned(
-                top: 300,
-                left: 185,
+              Center(
                 child: Text(
                   '$secondsRemaining',
                   style: const TextStyle(

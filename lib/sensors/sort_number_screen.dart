@@ -38,6 +38,8 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
 
   bool showSuccess = false;
   bool showError = false;
+
+  late List<Map<String, int>> quadrants;
   
   @override
   void initState() {
@@ -48,15 +50,35 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
     initVolumeController();
   }
 
+  //void pickRandomNumber() {
+  //  final random = Random();
+  //  setState(() {
+  //    firstNumber = random.nextInt(10);
+  //    secondNumber = random.nextInt(10);
+  //    thirdNumber = random.nextInt(10);
+  //    fourthNumber = random.nextInt(10);
+  //  });
+  //}
+
   void pickRandomNumber() {
-    final random = Random();
-    setState(() {
-      firstNumber = random.nextInt(10);
-      secondNumber = random.nextInt(10);
-      thirdNumber = random.nextInt(10);
-      fourthNumber = random.nextInt(10);
-    });
-  }
+  final random = Random();
+  setState(() {
+    firstNumber = random.nextInt(10);
+    secondNumber = random.nextInt(10);
+    thirdNumber = random.nextInt(10);
+    fourthNumber = random.nextInt(10);
+
+    quadrants = [
+      {'pos': 1, 'num': firstNumber},
+      {'pos': 2, 'num': secondNumber},
+      {'pos': 3, 'num': thirdNumber},
+      {'pos': 4, 'num': fourthNumber},
+    ];
+
+    quadrants.shuffle();
+  });
+}
+
   
   Future<void> _initSpeech() async {
     final available = speechToText.initialize();
@@ -79,10 +101,23 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
       9: 'nove',
     };
 
-    final currentSentence = '${numberNames[firstNumber]} ${numberNames[secondNumber]} ${numberNames[thirdNumber]} ${numberNames[fourthNumber]}';
-    final currentSentenceAlternative = '$firstNumber$secondNumber$thirdNumber$fourthNumber';
-  
-    return speechResult == currentSentence || speechResult.replaceAll(' ', '') == currentSentenceAlternative;
+    final sortedQuadrants = List<Map<String, int>>.from(quadrants)
+      ..sort((a, b) => (a['pos']!).compareTo(b['pos']!));
+
+    final currentSentence = sortedQuadrants
+        .map((q) => numberNames[q['num']]!)
+        .join(' ');
+
+    final currentSentenceAlternative = sortedQuadrants
+        .map((q) => q['num'].toString())
+        .join('');
+
+    debugPrint(currentSentence);
+    debugPrint(currentSentenceAlternative);
+    debugPrint(speechResult);
+
+    return speechResult.toLowerCase().trim() == currentSentence ||
+          speechResult.replaceAll(' ', '') == currentSentenceAlternative;
   }
 
   Future<void> _startListening() async {
@@ -212,16 +247,16 @@ class _SortNumberScreenState extends State<SortNumberScreen> {
                 Expanded(
                   child: Row(
                     children: [
-                      _buildQuadrant(1, firstNumber, deviceWidth),
-                      _buildQuadrant(2, secondNumber, deviceWidth),
+                      _buildQuadrant(quadrants[0]['pos']!, quadrants[0]['num']!, deviceWidth),
+                      _buildQuadrant(quadrants[1]['pos']!, quadrants[1]['num']!, deviceWidth),
                     ],
                   ),
                 ),
                 Expanded(
                   child: Row(
                     children: [
-                      _buildQuadrant(3, thirdNumber, deviceWidth),
-                      _buildQuadrant(4, fourthNumber, deviceWidth),
+                      _buildQuadrant(quadrants[2]['pos']!, quadrants[2]['num']!, deviceWidth),
+                      _buildQuadrant(quadrants[3]['pos']!, quadrants[3]['num']!, deviceWidth),
                     ],
                   ),
                 ),
