@@ -294,7 +294,7 @@ class _LevelScreenState extends State<LevelScreen> {
     final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Level Screen'),
+        title: const Text('Task Livella'),
         backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
       ),

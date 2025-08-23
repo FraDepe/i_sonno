@@ -170,7 +170,7 @@ class _SensorAppState extends State<SensorApp> {
     final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sensor Data'),
+        title: const Text('Shake Task'),
         automaticallyImplyLeading: false,
       ),
       body: Stack(

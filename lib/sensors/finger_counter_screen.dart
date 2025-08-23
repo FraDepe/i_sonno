@@ -104,7 +104,7 @@ class _FingerCounterScreenState extends State<FingerCounterScreen> {
     final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Count finger Screen'),
+        title: const Text('Task Conta Tap'),
         backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
       ),

@@ -192,7 +192,7 @@ class _PedometerAppState extends State<PedometerApp> {
     final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sensor Data'),
+        title: const Text('Pedometro'),
         automaticallyImplyLeading: false,
       ),
       body: Stack(
