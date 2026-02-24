@@ -1,0 +1,146 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:alarm/alarm.dart';
+import 'package:alarm/utils/alarm_set.dart';
+import 'package:flutter/material.dart';
+import 'package:i_Sonno_Beta/sensors/finger_counter_screen.dart';
+import 'package:i_Sonno_Beta/sensors/level_screen.dart';
+import 'package:i_Sonno_Beta/sensors/shake_detector.dart';
+import 'package:i_Sonno_Beta/sensors/sort_number_screen.dart';
+import 'package:i_Sonno_Beta/services/alarm_state.dart';
+import 'package:logging/logging.dart';
+import 'package:volume_controller/volume_controller.dart';
+
+class PlayingAlarmScreen extends StatefulWidget {
+  const PlayingAlarmScreen({required this.alarmId, super.key});
+
+  final int alarmId;
+
+  @override
+  _PlayingAlarmScreen createState() => _PlayingAlarmScreen();
+}
+
+class _PlayingAlarmScreen extends State<PlayingAlarmScreen> {
+  static final _log = Logger('PlayingAlarmScreen');
+
+  late final VolumeController _volumeController;
+  late final StreamSubscription<double> _subscription;
+  double _currentVolume = 0;
+  double _volumeValue = 0;
+  bool _isMuted = false;
+  
+  StreamSubscription<AlarmSet>? _ringingSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    initVolumeController();
+
+    _ringingSubscription = Alarm.ringing.listen((alarms) {
+      final currentRoute = ModalRoute.of(context)?.settings.name;
+      debugPrint(currentRoute);
+      if (alarms.containsId(widget.alarmId)) return;
+      _log.info('Alarm ${widget.alarmId} stopped ringing.');
+      _ringingSubscription?.cancel();
+      if (mounted) Navigator.pop(context);
+    });
+  }
+
+  Future<void> initVolumeController() async {
+    _volumeController = VolumeController.instance;
+    _volumeController.showSystemUI = false;
+    _subscription = _volumeController.addListener((volume) {
+      _volumeValue = volume;
+    });
+
+    await _volumeController.isMuted().then((isMuted) {
+      _isMuted = isMuted;
+    });
+
+    _currentVolume = await _volumeController.getVolume();
+
+    if(_currentVolume < 0.4 || _isMuted) {
+      await _volumeController.setVolume(0.75);
+    }
+  }
+
+  @override
+  void dispose() {
+    AlarmState.isAlarmActive = false;
+    _ringingSubscription?.cancel();
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> _stopAlarm() async {
+    switch (Random().nextInt(4)) {
+    //switch(3) {
+      case 0:
+        debugPrint('Shake');
+        await Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) =>  SensorApp(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/shakeTask'),
+        ),);
+        break;
+      case 1:
+        debugPrint('Livella');
+        await Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) =>  LevelScreen(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/levelTask'),
+        ),);
+        break;
+      case 2:
+        debugPrint('Dita');
+        await Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) =>  FingerCounterScreen(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/fingerTask'),
+        ),);
+        break;
+      case 3:
+        debugPrint('Ordina');
+        await Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) =>  SortNumberScreen(alarmId: widget.alarmId,),
+          settings: const RouteSettings(name: '/playingAlarm/sortTask'),
+        ),);
+        break;
+    }    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final deviceHeight = MediaQuery.of(context).size.height;
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: deviceWidth * 0.7,
+              height: deviceHeight * 0.20,
+              child: Text(
+                '${TimeOfDay.now().hour.toString().padLeft(2, '0')}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
+                style: TextStyle(fontSize: deviceWidth * 0.1),
+                textScaler: const TextScaler.linear(2.5),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 40), // spacing between text and button
+            ElevatedButton(
+              onPressed: _stopAlarm,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
+              child: const Text(
+                'Spegni sveglia',
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

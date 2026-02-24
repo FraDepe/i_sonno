@@ -1,16 +1,32 @@
-# i_sonno
 
-A new Flutter project.
 
-## Getting Started
+# i_Sonno
 
-This project is a starting point for a Flutter application.
+A task-based alarm to help people who have issues waking up
+Made for a Computer Science project [@uniroma1](http://www.uniroma1.it "@uniroma1").
 
-A few resources to get you started if this is your first Flutter project:
+## Description
+This app is a clock alarm which asks the user to complete some physical tasks in order to stop the ringing alarm.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Requirements
+Access to alarm and physical activity permissions.
+Access to accelerometer and pedometer.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Setup
+To install the app:
+```
+$ git clone https://github.com/FraDepe/i_sonno
+$ cd i_sonno/
+$ flutter pub get
+$ flutter build apk
+```
+Then install the apk on your phone
+
+## Languages Used
+![Static Badge](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white)     ![Static Badge](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white)
+
+
+## Supported Operating Systems
+![Static Badge](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)
+
+
